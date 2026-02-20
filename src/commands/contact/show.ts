@@ -2,6 +2,7 @@ import { Args } from "@oclif/core";
 import { BaseCommand } from "../../base-command.js";
 import { getDb } from "../../db/index.js";
 import { showContact } from "../../services/contacts.js";
+import { getFields } from "../../services/custom-fields.js";
 import { formatJson } from "../../utils/output.js";
 import { resolveContactId } from "../../utils/resolve.js";
 
@@ -60,6 +61,14 @@ export default class ContactShow extends BaseCommand {
 			for (const t of detail.tasks) {
 				const status = t.completed ? "done" : "open";
 				this.log(`    - [${status}] ${t.title}${t.due ? ` (due: ${t.due})` : ""}`);
+			}
+		}
+
+		const customFields = getFields(db, "contact", detail.id);
+		if (customFields.length > 0) {
+			this.log(`\n  Custom Fields (${customFields.length}):`);
+			for (const f of customFields) {
+				this.log(`    ${f.field_name}: ${f.field_value}`);
 			}
 		}
 	}

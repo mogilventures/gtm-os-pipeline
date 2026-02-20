@@ -4,9 +4,11 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { z } from "zod";
 import { getDb, schema } from "../db/index.js";
 import { listContacts, showContact, editContact } from "../services/contacts.js";
+import { setField, getFields } from "../services/custom-fields.js";
 import { listDeals } from "../services/deals.js";
 import { listOrganizations } from "../services/organizations.js";
 import { getRelated, resolveEntity, createEdge } from "../services/graph.js";
+import { searchAll } from "../services/search.js";
 import { eq } from "drizzle-orm";
 
 // Parse --db flag from CLI args
@@ -168,6 +170,42 @@ server.registerTool("create_edge", {
 }, async ({ from_type, from_id, to_type, to_id, relation }) => {
 	const edge = createEdge(db, from_type, from_id, to_type, to_id, relation);
 	return { content: [{ type: "text", text: `Edge created (id: ${edge.id})` }] };
+});
+
+server.registerTool("search_all", {
+	description: "Search across all entities (contacts, deals, orgs, tasks)",
+	inputSchema: {
+		query: z.string().describe("Search query"),
+		type: z.string().optional().describe("Filter by type: contact, deal, organization, task"),
+	},
+}, async ({ query, type }) => {
+	let { results } = searchAll(db, query);
+	if (type) results = results.filter((r) => r.type === type);
+	return { content: [{ type: "text", text: JSON.stringify(results, null, 2) }] };
+});
+
+server.registerTool("set_custom_field", {
+	description: "Set a custom field on a contact, deal, or organization",
+	inputSchema: {
+		entity_type: z.string().describe("Entity type: contact, deal, organization"),
+		entity_id: z.number().describe("Entity ID"),
+		field_name: z.string().describe("Field name"),
+		field_value: z.string().describe("Field value"),
+	},
+}, async ({ entity_type, entity_id, field_name, field_value }) => {
+	const field = setField(db, entity_type, entity_id, field_name, field_value);
+	return { content: [{ type: "text", text: `Set "${field_name}" = "${field_value}" on ${entity_type} ${entity_id}` }] };
+});
+
+server.registerTool("get_custom_fields", {
+	description: "Get custom fields for a contact, deal, or organization",
+	inputSchema: {
+		entity_type: z.string().describe("Entity type: contact, deal, organization"),
+		entity_id: z.number().describe("Entity ID"),
+	},
+}, async ({ entity_type, entity_id }) => {
+	const fields = getFields(db, entity_type, entity_id);
+	return { content: [{ type: "text", text: JSON.stringify(fields, null, 2) }] };
 });
 
 const transport = new StdioServerTransport();

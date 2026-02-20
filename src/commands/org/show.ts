@@ -1,6 +1,7 @@
 import { Args } from "@oclif/core";
 import { BaseCommand } from "../../base-command.js";
 import { getDb } from "../../db/index.js";
+import { getFields } from "../../services/custom-fields.js";
 import { getOrgsForFuzzy, showOrganization } from "../../services/organizations.js";
 import { fuzzyResolve } from "../../utils/fuzzy.js";
 import { formatJson } from "../../utils/output.js";
@@ -51,6 +52,14 @@ export default class OrgShow extends BaseCommand {
 			this.log(`\n  Deals (${detail.deals.length}):`);
 			for (const d of detail.deals) {
 				this.log(`    - ${d.title} (${d.stage}, $${d.value || 0})`);
+			}
+		}
+
+		const customFields = getFields(db, "organization", detail.id);
+		if (customFields.length > 0) {
+			this.log(`\n  Custom Fields (${customFields.length}):`);
+			for (const f of customFields) {
+				this.log(`    ${f.field_name}: ${f.field_value}`);
 			}
 		}
 	}

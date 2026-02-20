@@ -125,6 +125,28 @@ export const pendingActions = sqliteTable("pending_actions", {
 		.$defaultFn(() => new Date().toISOString()),
 });
 
+// ── Custom Fields ──────────────────────────────────────────────
+export const customFields = sqliteTable(
+	"custom_fields",
+	{
+		id: integer("id").primaryKey({ autoIncrement: true }),
+		entity_type: text("entity_type").notNull(),
+		entity_id: integer("entity_id").notNull(),
+		field_name: text("field_name").notNull(),
+		field_value: text("field_value"),
+		created_at: text("created_at")
+			.notNull()
+			.$defaultFn(() => new Date().toISOString()),
+		updated_at: text("updated_at")
+			.notNull()
+			.$defaultFn(() => new Date().toISOString()),
+	},
+	(table) => [
+		index("idx_custom_fields_entity").on(table.entity_type, table.entity_id),
+		index("idx_custom_fields_name").on(table.field_name),
+	],
+);
+
 // ── Edges (relationship graph) ──────────────────────────────────
 export const edges = sqliteTable(
 	"edges",

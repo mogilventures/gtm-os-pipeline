@@ -153,5 +153,19 @@ function runMigrations(db: Database.Database): void {
 		CREATE INDEX IF NOT EXISTS idx_edges_from ON edges(from_type, from_id);
 		CREATE INDEX IF NOT EXISTS idx_edges_to ON edges(to_type, to_id);
 		CREATE INDEX IF NOT EXISTS idx_edges_relation ON edges(relation);
+
+		CREATE TABLE IF NOT EXISTS custom_fields (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			entity_type TEXT NOT NULL,
+			entity_id INTEGER NOT NULL,
+			field_name TEXT NOT NULL,
+			field_value TEXT,
+			created_at TEXT NOT NULL DEFAULT (datetime('now')),
+			updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+			UNIQUE(entity_type, entity_id, field_name)
+		);
+
+		CREATE INDEX IF NOT EXISTS idx_custom_fields_entity ON custom_fields(entity_type, entity_id);
+		CREATE INDEX IF NOT EXISTS idx_custom_fields_name ON custom_fields(field_name);
 	`);
 }
