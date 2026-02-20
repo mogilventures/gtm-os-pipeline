@@ -1,9 +1,8 @@
 import { Args, Flags } from "@oclif/core";
 import { BaseCommand } from "../../base-command.js";
 import { getDb } from "../../db/index.js";
-import { getContactsForFuzzy } from "../../services/contacts.js";
 import { logInteraction } from "../../services/interactions.js";
-import { fuzzyResolve } from "../../utils/fuzzy.js";
+import { resolveContactId, resolveDealId } from "../../utils/resolve.js";
 
 export default class LogEmail extends BaseCommand {
 	static override description = "Log an email interaction";
@@ -28,16 +27,8 @@ export default class LogEmail extends BaseCommand {
 		const { args, flags } = await this.parse(LogEmail);
 		const db = getDb(flags.db);
 
-		const contacts = getContactsForFuzzy(db);
-		const match = await fuzzyResolve(contacts, args.contact, "contact", ["name", "email"]);
-
-		let dealId: number | undefined;
-		if (flags.deal) {
-			const { getDealsForFuzzy } = await import("../../services/deals.js");
-			const deals = getDealsForFuzzy(db);
-			const dealMatch = await fuzzyResolve(deals, flags.deal, "deal");
-			dealId = dealMatch.id;
-		}
+		const match = await resolveContactId(db, args.contact);
+		const dealId = flags.deal ? await resolveDealId(db, flags.deal) : undefined;
 
 		const interaction = logInteraction(db, {
 			contactId: match.id,

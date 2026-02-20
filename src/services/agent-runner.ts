@@ -6,7 +6,7 @@ import { Client } from "@modelcontextprotocol/sdk/client";
 // @ts-ignore
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 
-export interface AgentRunOptions {
+interface AgentRunOptions {
 	prompt: string;
 	systemPrompt: string;
 	dbPath?: string;

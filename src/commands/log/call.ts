@@ -1,9 +1,8 @@
 import { Args, Flags } from "@oclif/core";
 import { BaseCommand } from "../../base-command.js";
 import { getDb } from "../../db/index.js";
-import { getContactsForFuzzy } from "../../services/contacts.js";
 import { logInteraction } from "../../services/interactions.js";
-import { fuzzyResolve } from "../../utils/fuzzy.js";
+import { resolveContactId } from "../../utils/resolve.js";
 
 export default class LogCall extends BaseCommand {
 	static override description = "Log a call interaction";
@@ -26,8 +25,7 @@ export default class LogCall extends BaseCommand {
 		const { args, flags } = await this.parse(LogCall);
 		const db = getDb(flags.db);
 
-		const contacts = getContactsForFuzzy(db);
-		const match = await fuzzyResolve(contacts, args.contact, "contact", ["name", "email"]);
+		const match = await resolveContactId(db, args.contact);
 
 		const interaction = logInteraction(db, {
 			contactId: match.id,

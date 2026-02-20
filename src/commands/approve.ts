@@ -1,6 +1,6 @@
 import { Flags } from "@oclif/core";
 import { BaseCommand } from "../base-command.js";
-import { getDb } from "../db/index.js";
+import { getDb, schema } from "../db/index.js";
 import {
 	approveAction,
 	approveAll,
@@ -8,6 +8,8 @@ import {
 	rejectAction,
 } from "../services/approval.js";
 import { formatJson } from "../utils/output.js";
+
+type PendingAction = typeof schema.pendingActions.$inferSelect;
 
 export default class Approve extends BaseCommand {
 	static override description = "Review and approve agent-proposed actions";
@@ -25,6 +27,14 @@ export default class Approve extends BaseCommand {
 		all: Flags.boolean({ description: "Approve all pending actions" }),
 		reject: Flags.integer({ description: "Reject a specific action by ID" }),
 	};
+
+	private logAction(action: PendingAction): void {
+		this.log(`#${action.id} [${action.action_type}]`);
+		this.log(`  Reasoning: ${action.reasoning || "(none)"}`);
+		if (action.payload) {
+			this.log(`  Payload: ${JSON.stringify(action.payload)}`);
+		}
+	}
 
 	async run(): Promise<void> {
 		const { flags } = await this.parse(Approve);
@@ -48,12 +58,7 @@ export default class Approve extends BaseCommand {
 				this.log(formatJson(pending));
 			} else {
 				for (const action of pending) {
-					this.log(`#${action.id} [${action.action_type}]`);
-					this.log(`  Reasoning: ${action.reasoning || "(none)"}`);
-					const payload = action.payload as Record<string, unknown> | null;
-					if (payload) {
-						this.log(`  Payload: ${JSON.stringify(payload)}`);
-					}
+					this.logAction(action);
 					this.log("");
 				}
 			}
@@ -81,12 +86,8 @@ export default class Approve extends BaseCommand {
 		const { select } = await import("@inquirer/prompts");
 
 		for (const action of pending) {
-			this.log(`\n#${action.id} [${action.action_type}]`);
-			this.log(`  Reasoning: ${action.reasoning || "(none)"}`);
-			const payload = action.payload as Record<string, unknown> | null;
-			if (payload) {
-				this.log(`  Payload: ${JSON.stringify(payload)}`);
-			}
+			this.log("");
+			this.logAction(action);
 
 			const choice = await select({
 				message: "Action?",

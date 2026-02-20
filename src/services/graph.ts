@@ -2,9 +2,9 @@ import { and, eq, or } from "drizzle-orm";
 import type { PipelineDB } from "../db/index.js";
 import { schema } from "../db/index.js";
 
-export type EntityType = "person" | "organization" | "deal";
+type EntityType = "person" | "organization" | "deal";
 
-export interface ResolvedEntity {
+interface ResolvedEntity {
 	type: EntityType;
 	id: number;
 	name: string;
@@ -99,7 +99,7 @@ export function removeEdge(
 		.run();
 }
 
-export interface RelatedResult {
+interface RelatedResult {
 	contacts: Array<{ id: number; name: string; role: string | null }>;
 	organizations: Array<{ id: number; name: string }>;
 	deals: Array<{ id: number; title: string; stage: string }>;

@@ -1,8 +1,8 @@
 import { Args, Flags } from "@oclif/core";
 import { BaseCommand } from "../../base-command.js";
 import { getDb } from "../../db/index.js";
-import { editContact, getContactsForFuzzy } from "../../services/contacts.js";
-import { fuzzyResolve } from "../../utils/fuzzy.js";
+import { editContact } from "../../services/contacts.js";
+import { resolveContactId } from "../../utils/resolve.js";
 
 export default class ContactEdit extends BaseCommand {
 	static override description = "Edit a contact";
@@ -22,8 +22,7 @@ export default class ContactEdit extends BaseCommand {
 		const { args, flags } = await this.parse(ContactEdit);
 		const db = getDb(flags.db);
 
-		const contacts = getContactsForFuzzy(db);
-		const match = await fuzzyResolve(contacts, args.name, "contact", ["name", "email"]);
+		const match = await resolveContactId(db, args.name);
 
 		editContact(db, match.id, {
 			role: flags.role,

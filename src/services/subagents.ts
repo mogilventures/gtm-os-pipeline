@@ -1,8 +1,8 @@
-import { existsSync, mkdirSync, readdirSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 
-export interface AgentDefinition {
+interface AgentDefinition {
 	name: string;
 	description: string;
 	prompt: string;
@@ -77,16 +77,10 @@ export function getCustomAgents(): AgentDefinition[] {
 	});
 }
 
-export function getAllAgents(): AgentDefinition[] {
+function getAllAgents(): AgentDefinition[] {
 	return [...getBuiltinAgents(), ...getCustomAgents()];
 }
 
 export function getAgent(name: string): AgentDefinition | undefined {
 	return getAllAgents().find((a) => a.name === name);
-}
-
-export function ensureAgentsDir(): string {
-	const dir = join(homedir(), ".pipeline", "agents");
-	mkdirSync(dir, { recursive: true });
-	return dir;
 }

@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import type { PipelineDB } from "../db/index.js";
 import { schema } from "../db/index.js";
 
-export interface AddOrgInput {
+interface AddOrgInput {
 	name: string;
 	domain?: string;
 	industry?: string;

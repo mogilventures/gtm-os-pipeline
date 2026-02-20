@@ -3,7 +3,7 @@ import type { PipelineDB } from "../db/index.js";
 import { schema } from "../db/index.js";
 import { loadConfig } from "../config.js";
 
-export interface AddDealInput {
+interface AddDealInput {
 	title: string;
 	contactId?: number;
 	orgId?: number;

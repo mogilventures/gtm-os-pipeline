@@ -3,7 +3,7 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 import { parse, stringify } from "smol-toml";
 
-export interface PipelineConfig {
+interface PipelineConfig {
 	pipeline: {
 		stages: string[];
 		currency: string;
@@ -34,7 +34,7 @@ export function getConfigPath(): string {
 	return join(getPipelineDir(), "config.toml");
 }
 
-export function getProjectConfigPath(): string {
+function getProjectConfigPath(): string {
 	return join(process.cwd(), ".pipeline", "config.toml");
 }
 

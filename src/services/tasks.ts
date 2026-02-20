@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import type { PipelineDB } from "../db/index.js";
 import { schema } from "../db/index.js";
 
-export interface AddTaskInput {
+interface AddTaskInput {
 	title: string;
 	contactId?: number;
 	dealId?: number;

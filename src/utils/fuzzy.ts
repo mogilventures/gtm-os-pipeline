@@ -1,13 +1,13 @@
 import Fuse from "fuse.js";
 import { select } from "@inquirer/prompts";
 
-export interface FuzzyItem {
+interface FuzzyItem {
 	id: number;
 	name: string;
 	[key: string]: unknown;
 }
 
-export interface FuzzyResult<T extends FuzzyItem> {
+interface FuzzyResult<T extends FuzzyItem> {
 	item: T;
 	score: number;
 }

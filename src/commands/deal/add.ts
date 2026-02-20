@@ -1,12 +1,10 @@
 import { Args, Flags } from "@oclif/core";
 import { BaseCommand } from "../../base-command.js";
 import { getDb } from "../../db/index.js";
-import { getContactsForFuzzy } from "../../services/contacts.js";
 import { addDeal } from "../../services/deals.js";
-import { getOrgsForFuzzy } from "../../services/organizations.js";
 import { parseDate } from "../../utils/dates.js";
-import { fuzzyResolve } from "../../utils/fuzzy.js";
 import { formatJson } from "../../utils/output.js";
+import { resolveContactId, resolveOrgId } from "../../utils/resolve.js";
 
 export default class DealAdd extends BaseCommand {
 	static override description = "Add a new deal";
@@ -33,20 +31,8 @@ export default class DealAdd extends BaseCommand {
 		const { args, flags } = await this.parse(DealAdd);
 		const db = getDb(flags.db);
 
-		let contactId: number | undefined;
-		let orgId: number | undefined;
-
-		if (flags.contact) {
-			const contacts = getContactsForFuzzy(db);
-			const match = await fuzzyResolve(contacts, flags.contact, "contact", ["name", "email"]);
-			contactId = match.id;
-		}
-
-		if (flags.org) {
-			const orgs = getOrgsForFuzzy(db);
-			const match = await fuzzyResolve(orgs, flags.org, "organization");
-			orgId = match.id;
-		}
+		const contactId = flags.contact ? (await resolveContactId(db, flags.contact)).id : undefined;
+		const orgId = flags.org ? await resolveOrgId(db, flags.org) : undefined;
 
 		const deal = addDeal(db, {
 			title: args.title,

@@ -1,8 +1,8 @@
 import { Args, Flags } from "@oclif/core";
 import { BaseCommand } from "../../base-command.js";
 import { getDb } from "../../db/index.js";
-import { getContactsForFuzzy, removeContact } from "../../services/contacts.js";
-import { fuzzyResolve } from "../../utils/fuzzy.js";
+import { removeContact } from "../../services/contacts.js";
+import { resolveContactId } from "../../utils/resolve.js";
 
 export default class ContactRm extends BaseCommand {
 	static override description = "Remove a contact";
@@ -20,8 +20,7 @@ export default class ContactRm extends BaseCommand {
 		const { args, flags } = await this.parse(ContactRm);
 		const db = getDb(flags.db);
 
-		const contacts = getContactsForFuzzy(db);
-		const match = await fuzzyResolve(contacts, args.name, "contact", ["name", "email"]);
+		const match = await resolveContactId(db, args.name);
 
 		if (!flags.confirm && process.stdin.isTTY) {
 			const { confirm } = await import("@inquirer/prompts");

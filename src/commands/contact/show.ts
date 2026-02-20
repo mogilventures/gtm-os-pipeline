@@ -1,9 +1,9 @@
 import { Args } from "@oclif/core";
 import { BaseCommand } from "../../base-command.js";
 import { getDb } from "../../db/index.js";
-import { getContactsForFuzzy, showContact } from "../../services/contacts.js";
-import { fuzzyResolve } from "../../utils/fuzzy.js";
+import { showContact } from "../../services/contacts.js";
 import { formatJson } from "../../utils/output.js";
+import { resolveContactId } from "../../utils/resolve.js";
 
 export default class ContactShow extends BaseCommand {
 	static override description = "Show contact details";
@@ -20,16 +20,11 @@ export default class ContactShow extends BaseCommand {
 		const { args, flags } = await this.parse(ContactShow);
 		const db = getDb(flags.db);
 
-		const contacts = getContactsForFuzzy(db);
-		const match = await fuzzyResolve(contacts, args.name, "contact", [
-			"name",
-			"email",
-		]);
+		const match = await resolveContactId(db, args.name);
 		const detail = showContact(db, match.id);
 
 		if (!detail) {
 			this.error("Contact not found");
-			return;
 		}
 
 		if (flags.json) {

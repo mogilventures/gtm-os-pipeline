@@ -1,8 +1,8 @@
 import { Args } from "@oclif/core";
 import { BaseCommand } from "../../base-command.js";
 import { getDb } from "../../db/index.js";
-import { addNote, getContactsForFuzzy } from "../../services/contacts.js";
-import { fuzzyResolve } from "../../utils/fuzzy.js";
+import { addNote } from "../../services/contacts.js";
+import { resolveContactId } from "../../utils/resolve.js";
 
 export default class ContactNote extends BaseCommand {
 	static override description = "Add a note to a contact";
@@ -24,8 +24,7 @@ export default class ContactNote extends BaseCommand {
 		const { args, flags } = await this.parse(ContactNote);
 		const db = getDb(flags.db);
 
-		const contacts = getContactsForFuzzy(db);
-		const match = await fuzzyResolve(contacts, args.name, "contact", ["name", "email"]);
+		const match = await resolveContactId(db, args.name);
 
 		const interaction = addNote(db, match.id, args.body);
 		this.log(`Note added for ${match.name} (interaction id: ${interaction.id})`);

@@ -2,7 +2,7 @@ import { and, eq, like, sql } from "drizzle-orm";
 import type { PipelineDB } from "../db/index.js";
 import { schema } from "../db/index.js";
 
-export interface AddContactInput {
+interface AddContactInput {
 	name: string;
 	email?: string;
 	phone?: string;
@@ -14,7 +14,7 @@ export interface AddContactInput {
 	warmth?: string;
 }
 
-export interface ContactRow {
+interface ContactRow {
 	id: number;
 	name: string;
 	email: string | null;

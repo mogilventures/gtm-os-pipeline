@@ -1,8 +1,8 @@
 import { Args } from "@oclif/core";
 import { BaseCommand } from "../../base-command.js";
 import { getDb } from "../../db/index.js";
-import { getContactsForFuzzy, tagContact } from "../../services/contacts.js";
-import { fuzzyResolve } from "../../utils/fuzzy.js";
+import { tagContact } from "../../services/contacts.js";
+import { resolveContactId } from "../../utils/resolve.js";
 
 export default class ContactTag extends BaseCommand {
 	static override description = "Add or remove tags from a contact";
@@ -41,8 +41,7 @@ export default class ContactTag extends BaseCommand {
 			this.error("Specify tags with + to add or - to remove. Example: +investor -cold-lead");
 		}
 
-		const contacts = getContactsForFuzzy(db);
-		const match = await fuzzyResolve(contacts, args.name, "contact", ["name", "email"]);
+		const match = await resolveContactId(db, args.name);
 
 		const tags = tagContact(db, match.id, add, remove);
 		this.log(`Tags for ${match.name}: ${tags.join(", ") || "(none)"}`);

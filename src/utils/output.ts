@@ -18,29 +18,3 @@ export function formatTable(
 export function formatJson(data: unknown): string {
 	return JSON.stringify(data, null, 2);
 }
-
-export function outputResult(
-	data: unknown,
-	opts: { json?: boolean; quiet?: boolean },
-	headers?: string[],
-	toRow?: (item: unknown) => (string | number | null | undefined)[],
-): string {
-	if (opts.json) {
-		return formatJson(data);
-	}
-
-	if (opts.quiet && Array.isArray(data)) {
-		return data
-			.map((item: Record<string, unknown>) => item.id ?? item.name ?? "")
-			.join("\n");
-	}
-
-	if (headers && toRow && Array.isArray(data)) {
-		return formatTable(
-			headers,
-			data.map((item) => toRow(item)),
-		);
-	}
-
-	return typeof data === "string" ? data : formatJson(data);
-}

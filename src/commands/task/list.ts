@@ -1,10 +1,9 @@
 import { Flags } from "@oclif/core";
 import { BaseCommand } from "../../base-command.js";
 import { getDb } from "../../db/index.js";
-import { getContactsForFuzzy } from "../../services/contacts.js";
 import { listTasks } from "../../services/tasks.js";
-import { fuzzyResolve } from "../../utils/fuzzy.js";
 import { formatJson, formatTable } from "../../utils/output.js";
+import { resolveContactId, resolveDealId } from "../../utils/resolve.js";
 
 export default class TaskList extends BaseCommand {
 	static override description = "List tasks";
@@ -21,20 +20,8 @@ export default class TaskList extends BaseCommand {
 		const { flags } = await this.parse(TaskList);
 		const db = getDb(flags.db);
 
-		let contactId: number | undefined;
-		if (flags.contact) {
-			const contacts = getContactsForFuzzy(db);
-			const match = await fuzzyResolve(contacts, flags.contact, "contact", ["name", "email"]);
-			contactId = match.id;
-		}
-
-		let dealId: number | undefined;
-		if (flags.deal) {
-			const { getDealsForFuzzy } = await import("../../services/deals.js");
-			const deals = getDealsForFuzzy(db);
-			const match = await fuzzyResolve(deals, flags.deal, "deal");
-			dealId = match.id;
-		}
+		const contactId = flags.contact ? (await resolveContactId(db, flags.contact)).id : undefined;
+		const dealId = flags.deal ? await resolveDealId(db, flags.deal) : undefined;
 
 		const tasks = listTasks(db, {
 			dueToday: flags.due === "today",

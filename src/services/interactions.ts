@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import type { PipelineDB } from "../db/index.js";
 import { schema } from "../db/index.js";
 
-export interface LogInteractionInput {
+interface LogInteractionInput {
 	contactId: number;
 	type: string;
 	direction?: string;

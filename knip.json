@@ -1,0 +1,10 @@
+{
+	"$schema": "https://unpkg.com/knip@5/schema.json",
+	"entry": [
+		"bin/*.js",
+		"src/commands/**/*.ts",
+		"src/mcp/**/*.ts"
+	],
+	"project": ["src/**/*.ts", "test/**/*.ts", "bin/*.js"],
+	"ignoreDependencies": ["@oclif/plugin-help", "drizzle-kit"]
+}
