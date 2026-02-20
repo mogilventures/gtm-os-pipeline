@@ -104,6 +104,20 @@ describe("approval workflow", () => {
 		expect(output).toContain("Logged note");
 	});
 
+	it("approve send_email logs interaction as draft when sending fails", () => {
+		insertPendingAction(
+			dbPath,
+			"send_email",
+			{ to: "jane@acme.co", subject: "Follow up", body: "Hi Jane", contact_id: 1 },
+			"Stale contact",
+		);
+
+		// Email not configured, so sending will fail but should log as draft
+		const output = runPipeline(`approve --all ${dbFlag}`);
+		expect(output).toContain("Email sending failed");
+		expect(output).toContain("logged as draft");
+	});
+
 	it("approve moves deal stage from update_stage action", () => {
 		// Get deal ID
 		const dealOutput = runPipeline(`deal:list --json ${dbFlag}`);

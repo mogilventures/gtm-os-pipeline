@@ -66,7 +66,7 @@ export default class Approve extends BaseCommand {
 		}
 
 		if (flags.all) {
-			const results = approveAll(db);
+			const results = await approveAll(db);
 			for (const r of results) {
 				this.log(`Approved ${r}`);
 			}
@@ -99,7 +99,7 @@ export default class Approve extends BaseCommand {
 			});
 
 			if (choice === "approve") {
-				const result = approveAction(db, action.id);
+				const result = await approveAction(db, action.id);
 				this.log(`  → ${result}`);
 			} else if (choice === "reject") {
 				rejectAction(db, action.id);

@@ -87,6 +87,8 @@ export const interactions = sqliteTable("interactions", {
 	direction: text("direction"), // inbound, outbound
 	subject: text("subject"),
 	body: text("body"),
+	message_id: text("message_id"),
+	from_address: text("from_address"),
 	occurred_at: text("occurred_at")
 		.notNull()
 		.$defaultFn(() => new Date().toISOString()),

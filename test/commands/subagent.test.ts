@@ -5,13 +5,14 @@ import { cleanupTmpDir, createTmpDir, runPipeline } from "../helpers.js";
 import { getBuiltinAgents, getAgent } from "../../src/services/subagents.js";
 
 describe("subagent definitions", () => {
-	it("has four builtin agents", () => {
+	it("has five builtin agents", () => {
 		const agents = getBuiltinAgents();
-		expect(agents).toHaveLength(4);
+		expect(agents).toHaveLength(5);
 		expect(agents.map((a) => a.name)).toEqual([
 			"follow-up",
 			"enrich",
 			"digest",
+			"inbox",
 			"qualify",
 		]);
 	});

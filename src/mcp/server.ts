@@ -4,6 +4,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { z } from "zod";
 import { getDb, schema } from "../db/index.js";
 import { listContacts, showContact, editContact } from "../services/contacts.js";
+import { listInteractions } from "../services/interactions.js";
 import { setField, getFields } from "../services/custom-fields.js";
 import { listDeals } from "../services/deals.js";
 import { listOrganizations } from "../services/organizations.js";
@@ -206,6 +207,39 @@ server.registerTool("get_custom_fields", {
 }, async ({ entity_type, entity_id }) => {
 	const fields = getFields(db, entity_type, entity_id);
 	return { content: [{ type: "text", text: JSON.stringify(fields, null, 2) }] };
+});
+
+server.registerTool("check_inbox", {
+	description: "Get recent inbound emails, optionally filtered by contact",
+	inputSchema: {
+		contact_id: z.number().optional().describe("Filter by contact ID"),
+		limit: z.number().optional().describe("Max emails to return (default 20)"),
+	},
+}, async ({ contact_id, limit }) => {
+	const rows = listInteractions(db, {
+		contactId: contact_id,
+		type: "email",
+	})
+		.filter((r) => r.direction === "inbound")
+		.sort((a, b) => b.occurred_at.localeCompare(a.occurred_at))
+		.slice(0, limit ?? 20);
+	return { content: [{ type: "text", text: JSON.stringify(rows, null, 2) }] };
+});
+
+server.registerTool("get_email_thread", {
+	description: "Get full email conversation (inbound + outbound) for a contact",
+	inputSchema: {
+		contact_id: z.number().describe("Contact ID"),
+		limit: z.number().optional().describe("Max emails to return (default 20)"),
+	},
+}, async ({ contact_id, limit }) => {
+	const rows = listInteractions(db, {
+		contactId: contact_id,
+		type: "email",
+	})
+		.sort((a, b) => a.occurred_at.localeCompare(b.occurred_at))
+		.slice(-(limit ?? 20));
+	return { content: [{ type: "text", text: JSON.stringify(rows, null, 2) }] };
 });
 
 const transport = new StdioServerTransport();

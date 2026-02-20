@@ -12,6 +12,11 @@ interface PipelineConfig {
 		model: string;
 		auto_approve: boolean;
 	};
+	email: {
+		provider: "resend" | "none";
+		from: string;
+		resend_api_key: string;
+	};
 	[key: string]: unknown;
 }
 
@@ -23,6 +28,11 @@ const DEFAULT_CONFIG: PipelineConfig = {
 	agent: {
 		model: "claude-sonnet-4-6",
 		auto_approve: false,
+	},
+	email: {
+		provider: "none",
+		from: "",
+		resend_api_key: "",
 	},
 };
 

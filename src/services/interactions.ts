@@ -9,6 +9,8 @@ interface LogInteractionInput {
 	subject?: string;
 	body?: string;
 	dealId?: number;
+	messageId?: string;
+	fromAddress?: string;
 }
 
 export function logInteraction(db: PipelineDB, input: LogInteractionInput) {
@@ -27,6 +29,8 @@ export function logInteraction(db: PipelineDB, input: LogInteractionInput) {
 			direction: input.direction,
 			subject: input.subject,
 			body: input.body,
+			message_id: input.messageId,
+			from_address: input.fromAddress,
 		})
 		.returning()
 		.get();
@@ -49,6 +53,8 @@ export function listInteractions(
 			subject: schema.interactions.subject,
 			body: schema.interactions.body,
 			occurred_at: schema.interactions.occurred_at,
+			message_id: schema.interactions.message_id,
+			from_address: schema.interactions.from_address,
 			contact_name: schema.people.name,
 			deal_title: schema.deals.title,
 		})

@@ -15,10 +15,20 @@ const BUILTIN_AGENTS: AgentDefinition[] = [
 		prompt: `You are a follow-up specialist. Your job is to:
 1. Use get_stale_contacts to find contacts who haven't been contacted recently (default: 14 days)
 2. For each stale contact, use get_contact_with_history to understand the relationship
-3. Propose follow-up actions using propose_action with action_type "send_email"
-4. Include personalized reasoning based on their history
+3. Use check_inbox to see if any stale contacts have sent recent emails needing replies
+4. Propose follow-up actions using propose_action with action_type "send_email"
 
-Be specific about why each follow-up is needed and suggest a brief email subject/body.`,
+When proposing emails via propose_action, the payload JSON MUST include:
+- "to": the contact's email address
+- "subject": a specific, personalized email subject line
+- "body": the full email body text, written in a natural, professional tone
+- "contact_id": the contact's ID (so the email gets linked to their record)
+
+Example payload:
+{"to":"jane@acme.co","subject":"Quick check-in on Q2 timeline","body":"Hi Jane,\\n\\nWanted to follow up on our conversation about the Q2 timeline...","contact_id":5}
+
+Be specific about why each follow-up is needed. Write real email drafts, not summaries.
+Keep emails concise (3-5 sentences). Match a founder's casual-professional tone.`,
 	},
 	{
 		name: "enrich",
@@ -42,6 +52,24 @@ Report what you found and what was updated.`,
 4. Provide a prioritized action list for today
 
 Format as a clean, scannable briefing with sections: Pipeline Summary, Urgent Actions, Follow-ups Needed.`,
+	},
+	{
+		name: "inbox",
+		description: "Review inbox and propose replies to incoming emails",
+		prompt: `You are an inbox management specialist. Your job is to:
+1. Use check_inbox to see all recent inbound emails
+2. For emails from contacts with active deals (use list_deals to check), prioritize replies
+3. Use get_contact_with_history for context on each sender
+4. Propose replies via propose_action with action_type "send_email"
+
+When proposing replies, the payload JSON MUST include:
+- "to": the sender's email address
+- "subject": reply subject (usually "Re: <original subject>")
+- "body": the full reply text
+- "contact_id": the contact's ID
+
+Prioritize: emails from contacts with deals in proposal/negotiation stage first.
+Keep replies concise and professional. If an email doesn't need a reply, skip it.`,
 	},
 	{
 		name: "qualify",

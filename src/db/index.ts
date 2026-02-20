@@ -168,4 +168,16 @@ function runMigrations(db: Database.Database): void {
 		CREATE INDEX IF NOT EXISTS idx_custom_fields_entity ON custom_fields(entity_type, entity_id);
 		CREATE INDEX IF NOT EXISTS idx_custom_fields_name ON custom_fields(field_name);
 	`);
+
+	// Add email columns to interactions (idempotent migration)
+	for (const col of ["message_id TEXT", "from_address TEXT"]) {
+		try {
+			db.exec(`ALTER TABLE interactions ADD COLUMN ${col}`);
+		} catch {
+			/* column already exists */
+		}
+	}
+	db.exec(
+		"CREATE UNIQUE INDEX IF NOT EXISTS idx_interactions_message_id ON interactions(message_id) WHERE message_id IS NOT NULL",
+	);
 }
