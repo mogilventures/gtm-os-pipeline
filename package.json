@@ -1,0 +1,66 @@
+{
+  "name": "pipeline-cli",
+  "version": "0.1.0",
+  "description": "AI-native CLI CRM for developer-founders",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "pipeline": "./bin/run.js",
+    "pipeline-crm-mcp": "./bin/mcp.js"
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "dev": "tsc -b --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "biome check src/ test/",
+    "format": "biome check --write src/ test/",
+    "postinstall": "npm run build || true"
+  },
+  "oclif": {
+    "bin": "pipeline",
+    "dirname": "pipeline",
+    "commands": {
+      "strategy": "pattern",
+      "target": "./dist/commands"
+    },
+    "plugins": [
+      "@oclif/plugin-help"
+    ],
+    "topicSeparator": ":"
+  },
+  "files": [
+    "/bin",
+    "/dist"
+  ],
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.78.0",
+    "@inquirer/prompts": "^8.2.1",
+    "@modelcontextprotocol/sdk": "^1.26.0",
+    "@oclif/core": "^4.8.0",
+    "@oclif/plugin-help": "^6.2.37",
+    "better-sqlite3": "^12.6.2",
+    "chalk": "^5.6.2",
+    "cli-table3": "^0.6.5",
+    "csv-parse": "^6.1.0",
+    "csv-stringify": "^6.6.0",
+    "drizzle-orm": "^0.45.1",
+    "fuse.js": "^7.1.0",
+    "smol-toml": "^1.6.0",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.4.3",
+    "@oclif/test": "^4.1.16",
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^25.3.0",
+    "drizzle-kit": "^0.31.9",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.18"
+  }
+}
