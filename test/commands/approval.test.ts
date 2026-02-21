@@ -29,8 +29,12 @@ describe("approval workflow", () => {
 		dbPath = join(tmpDir, "test.db");
 		dbFlag = `--db ${dbPath}`;
 		runPipeline(`init ${dbFlag}`);
-		runPipeline(`contact:add "Jane Smith" --email jane@acme.co --org "Acme Corp" ${dbFlag}`);
-		runPipeline(`deal:add "Acme Consulting" --contact jane --value 15000 --stage proposal ${dbFlag}`);
+		runPipeline(
+			`contact:add "Jane Smith" --email jane@acme.co --org "Acme Corp" ${dbFlag}`,
+		);
+		runPipeline(
+			`deal:add "Acme Consulting" --contact jane --value 15000 --stage proposal ${dbFlag}`,
+		);
 	});
 
 	afterEach(() => {
@@ -43,7 +47,12 @@ describe("approval workflow", () => {
 	});
 
 	it("lists pending actions", () => {
-		insertPendingAction(dbPath, "create_task", { title: "Follow up with Jane" }, "Jane hasn't been contacted recently");
+		insertPendingAction(
+			dbPath,
+			"create_task",
+			{ title: "Follow up with Jane" },
+			"Jane hasn't been contacted recently",
+		);
 
 		const output = runPipeline(`approve --list ${dbFlag}`);
 		expect(output).toContain("create_task");
@@ -51,7 +60,12 @@ describe("approval workflow", () => {
 	});
 
 	it("lists pending actions as JSON", () => {
-		insertPendingAction(dbPath, "log_note", { body: "Test note" }, "Agent observation");
+		insertPendingAction(
+			dbPath,
+			"log_note",
+			{ body: "Test note" },
+			"Agent observation",
+		);
 
 		const output = runPipeline(`approve --list --json ${dbFlag}`);
 		const actions = JSON.parse(output);
@@ -60,8 +74,18 @@ describe("approval workflow", () => {
 	});
 
 	it("approves all pending actions", () => {
-		insertPendingAction(dbPath, "create_task", { title: "Follow up with Jane" }, "Stale contact");
-		insertPendingAction(dbPath, "log_note", { body: "Agent note about deal" }, "Deal update");
+		insertPendingAction(
+			dbPath,
+			"create_task",
+			{ title: "Follow up with Jane" },
+			"Stale contact",
+		);
+		insertPendingAction(
+			dbPath,
+			"log_note",
+			{ body: "Agent note about deal" },
+			"Deal update",
+		);
 
 		const output = runPipeline(`approve --all ${dbFlag}`);
 		expect(output).toContain("Approved");
@@ -73,11 +97,18 @@ describe("approval workflow", () => {
 		// Verify task was created
 		const taskOutput = runPipeline(`task:list --json ${dbFlag}`);
 		const tasks = JSON.parse(taskOutput);
-		expect(tasks.some((t: { title: string }) => t.title === "Follow up with Jane")).toBe(true);
+		expect(
+			tasks.some((t: { title: string }) => t.title === "Follow up with Jane"),
+		).toBe(true);
 	});
 
 	it("rejects a specific action", () => {
-		const actionId = insertPendingAction(dbPath, "send_email", { to: "jane@acme.co", subject: "Hello" }, "Time to reach out");
+		const actionId = insertPendingAction(
+			dbPath,
+			"send_email",
+			{ to: "jane@acme.co", subject: "Hello" },
+			"Time to reach out",
+		);
 
 		const output = runPipeline(`approve --reject ${actionId} ${dbFlag}`);
 		expect(output).toContain("Rejected");
@@ -88,17 +119,29 @@ describe("approval workflow", () => {
 	});
 
 	it("approve creates a task from create_task action", () => {
-		insertPendingAction(dbPath, "create_task", { title: "Schedule demo call" }, "Deal progressing");
+		insertPendingAction(
+			dbPath,
+			"create_task",
+			{ title: "Schedule demo call" },
+			"Deal progressing",
+		);
 
 		runPipeline(`approve --all ${dbFlag}`);
 
 		const taskOutput = runPipeline(`task:list --json ${dbFlag}`);
 		const tasks = JSON.parse(taskOutput);
-		expect(tasks.some((t: { title: string }) => t.title === "Schedule demo call")).toBe(true);
+		expect(
+			tasks.some((t: { title: string }) => t.title === "Schedule demo call"),
+		).toBe(true);
 	});
 
 	it("approve logs a note from log_note action", () => {
-		insertPendingAction(dbPath, "log_note", { body: "Agent noticed deal stalling" }, "No activity for 14 days");
+		insertPendingAction(
+			dbPath,
+			"log_note",
+			{ body: "Agent noticed deal stalling" },
+			"No activity for 14 days",
+		);
 
 		const output = runPipeline(`approve --all ${dbFlag}`);
 		expect(output).toContain("Logged note");
@@ -108,7 +151,12 @@ describe("approval workflow", () => {
 		insertPendingAction(
 			dbPath,
 			"send_email",
-			{ to: "jane@acme.co", subject: "Follow up", body: "Hi Jane", contact_id: 1 },
+			{
+				to: "jane@acme.co",
+				subject: "Follow up",
+				body: "Hi Jane",
+				contact_id: 1,
+			},
 			"Stale contact",
 		);
 
@@ -124,7 +172,12 @@ describe("approval workflow", () => {
 		const deals = JSON.parse(dealOutput);
 		const dealId = deals[0].id;
 
-		insertPendingAction(dbPath, "update_stage", { deal_id: dealId, stage: "negotiation" }, "Deal is ready to negotiate");
+		insertPendingAction(
+			dbPath,
+			"update_stage",
+			{ deal_id: dealId, stage: "negotiation" },
+			"Deal is ready to negotiate",
+		);
 
 		runPipeline(`approve --all ${dbFlag}`);
 

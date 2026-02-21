@@ -26,9 +26,7 @@ describe("search command", () => {
 	});
 
 	it("finds contact by email", () => {
-		runPipeline(
-			`contact:add "Jane Smith" --email jane@acme.co ${dbFlag}`,
-		);
+		runPipeline(`contact:add "Jane Smith" --email jane@acme.co ${dbFlag}`);
 		const output = runPipeline(`search jane@acme ${dbFlag}`);
 		expect(output).toContain("Jane Smith");
 	});
@@ -66,9 +64,7 @@ describe("search command", () => {
 	});
 
 	it("returns valid JSON structure", () => {
-		runPipeline(
-			`contact:add "Jane Smith" --email jane@acme.co ${dbFlag}`,
-		);
+		runPipeline(`contact:add "Jane Smith" --email jane@acme.co ${dbFlag}`);
 		const output = runPipeline(`search jane --json ${dbFlag}`);
 		const data = JSON.parse(output);
 		expect(data).toHaveProperty("results");
@@ -80,12 +76,8 @@ describe("search command", () => {
 	});
 
 	it("ranks results by relevance", () => {
-		runPipeline(
-			`contact:add "Jane Smith" --email jane@acme.co ${dbFlag}`,
-		);
-		runPipeline(
-			`contact:add "Janet Williams" --email janet@beta.co ${dbFlag}`,
-		);
+		runPipeline(`contact:add "Jane Smith" --email jane@acme.co ${dbFlag}`);
+		runPipeline(`contact:add "Janet Williams" --email janet@beta.co ${dbFlag}`);
 		const output = runPipeline(`search jane --json ${dbFlag}`);
 		const data = JSON.parse(output);
 		const contactResults = data.results.filter(

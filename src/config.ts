@@ -22,7 +22,14 @@ interface PipelineConfig {
 
 const DEFAULT_CONFIG: PipelineConfig = {
 	pipeline: {
-		stages: ["lead", "qualified", "proposal", "negotiation", "closed_won", "closed_lost"],
+		stages: [
+			"lead",
+			"qualified",
+			"proposal",
+			"negotiation",
+			"closed_won",
+			"closed_lost",
+		],
 		currency: "USD",
 	},
 	agent: {
@@ -71,7 +78,11 @@ export function loadConfig(): PipelineConfig {
 export function saveConfig(config: PipelineConfig): void {
 	const configPath = getConfigPath();
 	mkdirSync(getPipelineDir(), { recursive: true });
-	writeFileSync(configPath, stringify(config as Record<string, unknown>), "utf-8");
+	writeFileSync(
+		configPath,
+		stringify(config as Record<string, unknown>),
+		"utf-8",
+	);
 }
 
 export function getDefaultConfig(): PipelineConfig {
@@ -88,9 +99,16 @@ export function getConfigValue(config: PipelineConfig, key: string): unknown {
 	return current;
 }
 
-export function setConfigValue(config: PipelineConfig, key: string, value: string): void {
+export function setConfigValue(
+	config: PipelineConfig,
+	key: string,
+	value: string,
+): void {
 	const parts = key.split(".");
-	let current: Record<string, unknown> = config as unknown as Record<string, unknown>;
+	let current: Record<string, unknown> = config as unknown as Record<
+		string,
+		unknown
+	>;
 	for (let i = 0; i < parts.length - 1; i++) {
 		const part = parts[i];
 		if (current[part] == null || typeof current[part] !== "object") {
@@ -109,7 +127,10 @@ export function setConfigValue(config: PipelineConfig, key: string, value: strin
 	}
 }
 
-function deepMerge(target: Record<string, unknown>, source: Record<string, unknown>): void {
+function deepMerge(
+	target: Record<string, unknown>,
+	source: Record<string, unknown>,
+): void {
 	for (const key of Object.keys(source)) {
 		if (
 			source[key] &&

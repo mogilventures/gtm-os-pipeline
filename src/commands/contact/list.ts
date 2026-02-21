@@ -19,7 +19,9 @@ export default class ContactList extends BaseCommand {
 		tag: Flags.string({ description: "Filter by tag" }),
 		org: Flags.string({ description: "Filter by organization" }),
 		warmth: Flags.string({ description: "Filter by warmth" }),
-		stale: Flags.string({ description: "Show contacts not updated in N days (e.g. 30d)" }),
+		stale: Flags.string({
+			description: "Show contacts not updated in N days (e.g. 30d)",
+		}),
 	};
 
 	async run(): Promise<void> {

@@ -12,7 +12,9 @@ interface SendEmailResult {
 	provider: string;
 }
 
-export async function sendEmail(opts: SendEmailOptions): Promise<SendEmailResult> {
+export async function sendEmail(
+	opts: SendEmailOptions,
+): Promise<SendEmailResult> {
 	const config = loadConfig();
 
 	if (config.email.provider === "none" || !config.email.provider) {
@@ -108,18 +110,18 @@ export async function fetchInboundEmails(opts?: {
 	const apiKey = getResendApiKey();
 	const limit = opts?.limit ?? 50;
 
-	const res = await fetch(
-		`https://api.resend.com/emails?limit=${limit}`,
-		{
-			headers: { Authorization: `Bearer ${apiKey}` },
-		},
-	);
+	const res = await fetch(`https://api.resend.com/emails?limit=${limit}`, {
+		headers: { Authorization: `Bearer ${apiKey}` },
+	});
 
 	if (!res.ok) {
 		throw new Error(`Resend API error (${res.status}): ${await res.text()}`);
 	}
 
-	const body = (await res.json()) as { data: InboundEmail[]; has_more?: boolean };
+	const body = (await res.json()) as {
+		data: InboundEmail[];
+		has_more?: boolean;
+	};
 	return {
 		data: body.data ?? [],
 		has_more: body.has_more ?? false,

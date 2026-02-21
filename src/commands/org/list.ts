@@ -38,7 +38,14 @@ export default class OrgList extends BaseCommand {
 		this.log(
 			formatTable(
 				["ID", "Name", "Domain", "Industry", "Size", "Location"],
-				orgs.map((o) => [o.id, o.name, o.domain, o.industry, o.size, o.location]),
+				orgs.map((o) => [
+					o.id,
+					o.name,
+					o.domain,
+					o.industry,
+					o.size,
+					o.location,
+				]),
 			),
 		);
 	}

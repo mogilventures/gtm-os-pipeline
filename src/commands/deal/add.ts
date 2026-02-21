@@ -23,7 +23,10 @@ export default class DealAdd extends BaseCommand {
 		org: Flags.string({ description: "Organization name (fuzzy match)" }),
 		value: Flags.integer({ description: "Deal value" }),
 		stage: Flags.string({ description: "Pipeline stage" }),
-		priority: Flags.string({ description: "Priority", options: ["low", "medium", "high"] }),
+		priority: Flags.string({
+			description: "Priority",
+			options: ["low", "medium", "high"],
+		}),
 		"expected-close": Flags.string({ description: "Expected close date" }),
 	};
 
@@ -31,7 +34,9 @@ export default class DealAdd extends BaseCommand {
 		const { args, flags } = await this.parse(DealAdd);
 		const db = getDb(flags.db);
 
-		const contactId = flags.contact ? (await resolveContactId(db, flags.contact)).id : undefined;
+		const contactId = flags.contact
+			? (await resolveContactId(db, flags.contact)).id
+			: undefined;
 		const orgId = flags.org ? await resolveOrgId(db, flags.org) : undefined;
 
 		const deal = addDeal(db, {
@@ -41,7 +46,9 @@ export default class DealAdd extends BaseCommand {
 			value: flags.value,
 			stage: flags.stage,
 			priority: flags.priority,
-			expectedClose: flags["expected-close"] ? parseDate(flags["expected-close"]) : undefined,
+			expectedClose: flags["expected-close"]
+				? parseDate(flags["expected-close"])
+				: undefined,
 		});
 
 		if (flags.json) {
@@ -49,7 +56,9 @@ export default class DealAdd extends BaseCommand {
 		} else if (flags.quiet) {
 			this.log(String(deal.id));
 		} else {
-			this.log(`Added deal: ${deal.title} (id: ${deal.id}, stage: ${deal.stage})`);
+			this.log(
+				`Added deal: ${deal.title} (id: ${deal.id}, stage: ${deal.stage})`,
+			);
 		}
 	}
 }

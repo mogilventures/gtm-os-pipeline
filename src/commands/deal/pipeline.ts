@@ -4,7 +4,8 @@ import { pipelineView } from "../../services/deals.js";
 import { formatJson } from "../../utils/output.js";
 
 export default class DealPipeline extends BaseCommand {
-	static override description = "Show ASCII pipeline/kanban view of deals by stage";
+	static override description =
+		"Show ASCII pipeline/kanban view of deals by stage";
 
 	static override flags = { ...BaseCommand.baseFlags };
 

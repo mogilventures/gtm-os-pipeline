@@ -7,7 +7,10 @@ export default class AgentEnrich extends BaseCommand {
 	static override description = "Research a contact and update their records";
 
 	static override args = {
-		contact: Args.string({ description: "Contact name to enrich", required: true }),
+		contact: Args.string({
+			description: "Contact name to enrich",
+			required: true,
+		}),
 	};
 
 	static override flags = {

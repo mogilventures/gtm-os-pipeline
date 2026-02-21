@@ -1,8 +1,9 @@
-import { Args, Flags } from "@oclif/core";
 import { readFileSync } from "node:fs";
+import { Args, Flags } from "@oclif/core";
 import { parse } from "csv-parse/sync";
 import { BaseCommand } from "../base-command.js";
 import { getDb } from "../db/index.js";
+import { importCustomFields } from "../utils/custom-fields-io.js";
 import {
 	type EntityType,
 	getImportHandler,
@@ -10,7 +11,6 @@ import {
 	normalizeColumn,
 } from "../utils/import-handlers.js";
 import { stripBom } from "../utils/validation.js";
-import { importCustomFields } from "../utils/custom-fields-io.js";
 
 export default class Import extends BaseCommand {
 	static override description = "Import records from a CSV file";

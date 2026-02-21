@@ -32,8 +32,12 @@ describe("organization commands", () => {
 	});
 
 	it("shows organization details", () => {
-		runPipeline(`org:add "Acme Corp" --domain acme.co --industry Tech ${dbFlag}`);
-		runPipeline(`contact:add "Jane Smith" --org "Acme Corp" --role CTO ${dbFlag}`);
+		runPipeline(
+			`org:add "Acme Corp" --domain acme.co --industry Tech ${dbFlag}`,
+		);
+		runPipeline(
+			`contact:add "Jane Smith" --org "Acme Corp" --role CTO ${dbFlag}`,
+		);
 		const output = runPipeline(`org:show acme ${dbFlag}`);
 		expect(output).toContain("Acme Corp");
 		expect(output).toContain("Jane Smith");
@@ -49,7 +53,9 @@ describe("organization commands", () => {
 
 	it("lists contacts at org", () => {
 		runPipeline(`org:add "Acme Corp" ${dbFlag}`);
-		runPipeline(`contact:add "Jane Smith" --org "Acme Corp" --role CTO ${dbFlag}`);
+		runPipeline(
+			`contact:add "Jane Smith" --org "Acme Corp" --role CTO ${dbFlag}`,
+		);
 		runPipeline(`contact:add "Bob Lee" --org "Acme Corp" --role VP ${dbFlag}`);
 		const output = runPipeline(`org:contacts acme ${dbFlag}`);
 		expect(output).toContain("Jane Smith");

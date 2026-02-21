@@ -10,7 +10,10 @@ interface ResolvedEntity {
 	name: string;
 }
 
-export function resolveEntity(db: PipelineDB, query: string): ResolvedEntity | null {
+export function resolveEntity(
+	db: PipelineDB,
+	query: string,
+): ResolvedEntity | null {
 	const q = query.toLowerCase();
 
 	// Search people
@@ -103,12 +106,27 @@ interface RelatedResult {
 	contacts: Array<{ id: number; name: string; role: string | null }>;
 	organizations: Array<{ id: number; name: string }>;
 	deals: Array<{ id: number; title: string; stage: string }>;
-	interactions: Array<{ id: number; type: string; subject: string | null; occurred_at: string }>;
+	interactions: Array<{
+		id: number;
+		type: string;
+		subject: string | null;
+		occurred_at: string;
+	}>;
 	tasks: Array<{ id: number; title: string; due: string | null }>;
-	edges: Array<{ id: number; from_type: string; from_id: number; to_type: string; to_id: number; relation: string }>;
+	edges: Array<{
+		id: number;
+		from_type: string;
+		from_id: number;
+		to_type: string;
+		to_id: number;
+		relation: string;
+	}>;
 }
 
-export function getRelated(db: PipelineDB, entity: ResolvedEntity): RelatedResult {
+export function getRelated(
+	db: PipelineDB,
+	entity: ResolvedEntity,
+): RelatedResult {
 	const result: RelatedResult = {
 		contacts: [],
 		organizations: [],
@@ -132,10 +150,16 @@ export function getRelated(db: PipelineDB, entity: ResolvedEntity): RelatedResul
 			.where(eq(schema.contacts.person_id, entity.id))
 			.all();
 
-		result.contacts = contacts.map((c) => ({ id: c.id, name: c.name, role: c.role }));
+		result.contacts = contacts.map((c) => ({
+			id: c.id,
+			name: c.name,
+			role: c.role,
+		}));
 
 		// FK: orgs via contacts
-		const orgIds = new Set(contacts.map((c) => c.org_id).filter(Boolean) as number[]);
+		const orgIds = new Set(
+			contacts.map((c) => c.org_id).filter(Boolean) as number[],
+		);
 		for (const orgId of orgIds) {
 			const org = db
 				.select()
@@ -203,7 +227,11 @@ export function getRelated(db: PipelineDB, entity: ResolvedEntity): RelatedResul
 			.from(schema.deals)
 			.where(eq(schema.deals.org_id, entity.id))
 			.all();
-		result.deals = deals.map((d) => ({ id: d.id, title: d.title, stage: d.stage }));
+		result.deals = deals.map((d) => ({
+			id: d.id,
+			title: d.title,
+			stage: d.stage,
+		}));
 	}
 
 	if (entity.type === "deal") {
@@ -221,7 +249,10 @@ export function getRelated(db: PipelineDB, entity: ResolvedEntity): RelatedResul
 						role: schema.contacts.role,
 					})
 					.from(schema.contacts)
-					.innerJoin(schema.people, eq(schema.contacts.person_id, schema.people.id))
+					.innerJoin(
+						schema.people,
+						eq(schema.contacts.person_id, schema.people.id),
+					)
 					.where(eq(schema.contacts.id, deal.contact_id))
 					.get();
 				if (contact) result.contacts.push(contact);
@@ -252,7 +283,11 @@ export function getRelated(db: PipelineDB, entity: ResolvedEntity): RelatedResul
 				.from(schema.tasks)
 				.where(eq(schema.tasks.deal_id, entity.id))
 				.all();
-			result.tasks = tasks.map((t) => ({ id: t.id, title: t.title, due: t.due }));
+			result.tasks = tasks.map((t) => ({
+				id: t.id,
+				title: t.title,
+				due: t.due,
+			}));
 		}
 	}
 

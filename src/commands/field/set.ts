@@ -1,19 +1,23 @@
 import { Args } from "@oclif/core";
 import { eq } from "drizzle-orm";
 import { BaseCommand } from "../../base-command.js";
-import { getDb, schema } from "../../db/index.js";
 import type { PipelineDB } from "../../db/index.js";
+import { getDb, schema } from "../../db/index.js";
 import { setField } from "../../services/custom-fields.js";
 import { formatJson } from "../../utils/output.js";
-import { resolveContactId, resolveDealId, resolveOrgId } from "../../utils/resolve.js";
+import {
+	resolveContactId,
+	resolveDealId,
+	resolveOrgId,
+} from "../../utils/resolve.js";
 
 export default class FieldSet extends BaseCommand {
 	static override description = "Set a custom field on an entity";
 
 	static override examples = [
-		'<%= config.bin %> field:set contact:jane industry_focus fintech',
-		'<%= config.bin %> field:set deal:acme priority_score 85',
-		'<%= config.bin %> field:set org:beta sector enterprise',
+		"<%= config.bin %> field:set contact:jane industry_focus fintech",
+		"<%= config.bin %> field:set deal:acme priority_score 85",
+		"<%= config.bin %> field:set org:beta sector enterprise",
 	];
 
 	static override args = {
@@ -39,8 +43,17 @@ export default class FieldSet extends BaseCommand {
 		const { args, flags } = await this.parse(FieldSet);
 		const db = getDb(flags.db);
 
-		const { entityType, entityId, entityName } = await resolveEntity(db, args.entity);
-		const field = setField(db, entityType, entityId, args.field_name, args.value);
+		const { entityType, entityId, entityName } = await resolveEntity(
+			db,
+			args.entity,
+		);
+		const field = setField(
+			db,
+			entityType,
+			entityId,
+			args.field_name,
+			args.value,
+		);
 
 		if (flags.json) {
 			this.log(formatJson(field));
@@ -71,7 +84,11 @@ export async function resolveEntity(
 	switch (rawType) {
 		case "contact": {
 			const match = await resolveContactId(db, query);
-			return { entityType: "contact", entityId: match.id, entityName: match.name };
+			return {
+				entityType: "contact",
+				entityId: match.id,
+				entityName: match.name,
+			};
 		}
 		case "deal": {
 			const dealId = await resolveDealId(db, query);
@@ -80,7 +97,11 @@ export async function resolveEntity(
 				.from(schema.deals)
 				.where(eq(schema.deals.id, dealId))
 				.get();
-			return { entityType: "deal", entityId: dealId, entityName: deal?.title ?? String(dealId) };
+			return {
+				entityType: "deal",
+				entityId: dealId,
+				entityName: deal?.title ?? String(dealId),
+			};
 		}
 		case "org":
 		case "organization": {

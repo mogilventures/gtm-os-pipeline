@@ -8,7 +8,10 @@ export default class DealMove extends BaseCommand {
 	static override description = "Move a deal to a new stage";
 
 	static override args = {
-		name: Args.string({ description: "Deal name (fuzzy match)", required: true }),
+		name: Args.string({
+			description: "Deal name (fuzzy match)",
+			required: true,
+		}),
 		stage: Args.string({ description: "Target stage", required: true }),
 	};
 

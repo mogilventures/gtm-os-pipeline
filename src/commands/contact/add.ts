@@ -20,7 +20,10 @@ export default class ContactAdd extends BaseCommand {
 		email: Flags.string({ description: "Email address" }),
 		org: Flags.string({ description: "Organization name" }),
 		role: Flags.string({ description: "Role/title" }),
-		tag: Flags.string({ description: "Tag (can specify multiple)", multiple: true }),
+		tag: Flags.string({
+			description: "Tag (can specify multiple)",
+			multiple: true,
+		}),
 		source: Flags.string({ description: "How you met" }),
 		warmth: Flags.string({
 			description: "Relationship warmth",

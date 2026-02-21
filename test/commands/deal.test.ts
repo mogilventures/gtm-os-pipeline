@@ -10,7 +10,9 @@ describe("deal commands", () => {
 		tmpDir = createTmpDir();
 		dbFlag = `--db ${join(tmpDir, "test.db")}`;
 		runPipeline(`init ${dbFlag}`);
-		runPipeline(`contact:add "Jane Smith" --email jane@acme.co --org "Acme Corp" ${dbFlag}`);
+		runPipeline(
+			`contact:add "Jane Smith" --email jane@acme.co --org "Acme Corp" ${dbFlag}`,
+		);
 	});
 
 	afterEach(() => {
@@ -26,7 +28,9 @@ describe("deal commands", () => {
 	});
 
 	it("lists deals", () => {
-		runPipeline(`deal:add "Acme Consulting" --value 15000 --stage proposal ${dbFlag}`);
+		runPipeline(
+			`deal:add "Acme Consulting" --value 15000 --stage proposal ${dbFlag}`,
+		);
 		runPipeline(`deal:add "Startup Deal" --value 5000 ${dbFlag}`);
 		const output = runPipeline(`deal:list ${dbFlag}`);
 		expect(output).toContain("Acme Consulting");
@@ -58,7 +62,9 @@ describe("deal commands", () => {
 	});
 
 	it("shows pipeline view", () => {
-		runPipeline(`deal:add "Acme Consulting" --value 15000 --stage proposal ${dbFlag}`);
+		runPipeline(
+			`deal:add "Acme Consulting" --value 15000 --stage proposal ${dbFlag}`,
+		);
 		runPipeline(`deal:add "Startup Deal" --value 5000 --stage lead ${dbFlag}`);
 		const output = runPipeline(`deal:pipeline ${dbFlag}`);
 		expect(output).toContain("proposal");
@@ -76,7 +82,9 @@ describe("deal commands", () => {
 
 	it("adds a deal note", () => {
 		runPipeline(`deal:add "Acme Consulting" --stage proposal ${dbFlag}`);
-		const output = runPipeline(`deal:note acme "Sent revised proposal" ${dbFlag}`);
+		const output = runPipeline(
+			`deal:note acme "Sent revised proposal" ${dbFlag}`,
+		);
 		expect(output).toContain("Note added");
 	});
 
@@ -87,7 +95,9 @@ describe("deal commands", () => {
 		runPipeline(`deal:close lifecycle --won ${dbFlag}`);
 		const output = runPipeline(`deal:list --json ${dbFlag}`);
 		const deals = JSON.parse(output);
-		const deal = deals.find((d: { title: string }) => d.title === "Lifecycle Deal");
+		const deal = deals.find(
+			(d: { title: string }) => d.title === "Lifecycle Deal",
+		);
 		expect(deal.stage).toBe("closed_won");
 	});
 });

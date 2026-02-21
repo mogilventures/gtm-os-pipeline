@@ -28,12 +28,8 @@ describe("custom fields commands", () => {
 	});
 
 	it("gets all fields for a contact", () => {
-		runPipeline(
-			`field:set contact:jane industry_focus fintech ${dbFlag}`,
-		);
-		runPipeline(
-			`field:set contact:jane lead_score 85 ${dbFlag}`,
-		);
+		runPipeline(`field:set contact:jane industry_focus fintech ${dbFlag}`);
+		runPipeline(`field:set contact:jane lead_score 85 ${dbFlag}`);
 		const output = runPipeline(`field:get contact:jane ${dbFlag}`);
 		expect(output).toContain("industry_focus");
 		expect(output).toContain("fintech");
@@ -43,9 +39,7 @@ describe("custom fields commands", () => {
 	});
 
 	it("gets a specific field by name", () => {
-		runPipeline(
-			`field:set contact:jane lead_score 85 ${dbFlag}`,
-		);
+		runPipeline(`field:set contact:jane lead_score 85 ${dbFlag}`);
 		const output = runPipeline(
 			`field:get contact:jane --field lead_score ${dbFlag}`,
 		);
@@ -53,12 +47,8 @@ describe("custom fields commands", () => {
 	});
 
 	it("updates an existing field (upsert)", () => {
-		runPipeline(
-			`field:set contact:jane lead_score 50 ${dbFlag}`,
-		);
-		runPipeline(
-			`field:set contact:jane lead_score 85 ${dbFlag}`,
-		);
+		runPipeline(`field:set contact:jane lead_score 50 ${dbFlag}`);
+		runPipeline(`field:set contact:jane lead_score 85 ${dbFlag}`);
 		const output = runPipeline(
 			`field:get contact:jane --field lead_score ${dbFlag}`,
 		);
@@ -66,15 +56,9 @@ describe("custom fields commands", () => {
 	});
 
 	it("removes a field", () => {
-		runPipeline(
-			`field:set contact:jane industry_focus fintech ${dbFlag}`,
-		);
-		runPipeline(
-			`field:set contact:jane lead_score 85 ${dbFlag}`,
-		);
-		const output = runPipeline(
-			`field:rm contact:jane lead_score ${dbFlag}`,
-		);
+		runPipeline(`field:set contact:jane industry_focus fintech ${dbFlag}`);
+		runPipeline(`field:set contact:jane lead_score 85 ${dbFlag}`);
+		const output = runPipeline(`field:rm contact:jane lead_score ${dbFlag}`);
 		expect(output).toContain('Removed field "lead_score"');
 
 		const fields = runPipeline(`field:get contact:jane ${dbFlag}`);
@@ -84,9 +68,7 @@ describe("custom fields commands", () => {
 	});
 
 	it("sets fields on deals", () => {
-		runPipeline(
-			`deal:add "Acme Deal" --contact jane --value 15000 ${dbFlag}`,
-		);
+		runPipeline(`deal:add "Acme Deal" --contact jane --value 15000 ${dbFlag}`);
 		const output = runPipeline(
 			`field:set deal:acme priority_score high ${dbFlag}`,
 		);
@@ -95,17 +77,13 @@ describe("custom fields commands", () => {
 	});
 
 	it("sets fields on organizations", () => {
-		const output = runPipeline(
-			`field:set org:acme founded 2020 ${dbFlag}`,
-		);
+		const output = runPipeline(`field:set org:acme founded 2020 ${dbFlag}`);
 		expect(output).toContain('Set field "founded" = "2020"');
 		expect(output).toContain("organization");
 	});
 
 	it("shows custom fields in contact:show", () => {
-		runPipeline(
-			`field:set contact:jane industry_focus fintech ${dbFlag}`,
-		);
+		runPipeline(`field:set contact:jane industry_focus fintech ${dbFlag}`);
 		const output = runPipeline(`contact:show jane ${dbFlag}`);
 		expect(output).toContain("Custom Fields");
 		expect(output).toContain("industry_focus");
@@ -113,9 +91,7 @@ describe("custom fields commands", () => {
 	});
 
 	it("shows custom fields in org:show", () => {
-		runPipeline(
-			`field:set org:acme founded 2020 ${dbFlag}`,
-		);
+		runPipeline(`field:set org:acme founded 2020 ${dbFlag}`);
 		const output = runPipeline(`org:show acme ${dbFlag}`);
 		expect(output).toContain("Custom Fields");
 		expect(output).toContain("founded");
@@ -123,12 +99,8 @@ describe("custom fields commands", () => {
 	});
 
 	it("returns valid JSON from field:get", () => {
-		runPipeline(
-			`field:set contact:jane industry_focus fintech ${dbFlag}`,
-		);
-		const output = runPipeline(
-			`field:get contact:jane --json ${dbFlag}`,
-		);
+		runPipeline(`field:set contact:jane industry_focus fintech ${dbFlag}`);
+		const output = runPipeline(`field:get contact:jane --json ${dbFlag}`);
 		const data = JSON.parse(output);
 		expect(Array.isArray(data)).toBe(true);
 		expect(data[0]).toHaveProperty("field_name", "industry_focus");

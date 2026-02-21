@@ -32,12 +32,17 @@ export default class FieldGet extends BaseCommand {
 		const { args, flags } = await this.parse(FieldGet);
 		const db = getDb(flags.db);
 
-		const { entityType, entityId, entityName } = await resolveEntity(db, args.entity);
+		const { entityType, entityId, entityName } = await resolveEntity(
+			db,
+			args.entity,
+		);
 
 		if (flags.field) {
 			const field = getField(db, entityType, entityId, flags.field);
 			if (!field) {
-				this.log(`No field "${flags.field}" found on ${entityType} ${entityName}`);
+				this.log(
+					`No field "${flags.field}" found on ${entityType} ${entityName}`,
+				);
 				return;
 			}
 
@@ -61,13 +66,17 @@ export default class FieldGet extends BaseCommand {
 			return;
 		}
 
-		this.log(`Custom fields for ${entityType} ${entityName} (id: ${entityId}):\n`);
+		this.log(
+			`Custom fields for ${entityType} ${entityName} (id: ${entityId}):\n`,
+		);
 		this.log(
 			formatTable(
 				["Field", "Value"],
 				fields.map((f) => [f.field_name, f.field_value]),
 			),
 		);
-		this.log(`\n${fields.length} custom field${fields.length === 1 ? "" : "s"}`);
+		this.log(
+			`\n${fields.length} custom field${fields.length === 1 ? "" : "s"}`,
+		);
 	}
 }

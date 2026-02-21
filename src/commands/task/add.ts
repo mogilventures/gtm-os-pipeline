@@ -21,14 +21,18 @@ export default class TaskAdd extends BaseCommand {
 		...BaseCommand.baseFlags,
 		contact: Flags.string({ description: "Contact name (fuzzy match)" }),
 		deal: Flags.string({ description: "Deal name (fuzzy match)" }),
-		due: Flags.string({ description: "Due date (tomorrow, next week, 2026-03-01)" }),
+		due: Flags.string({
+			description: "Due date (tomorrow, next week, 2026-03-01)",
+		}),
 	};
 
 	async run(): Promise<void> {
 		const { args, flags } = await this.parse(TaskAdd);
 		const db = getDb(flags.db);
 
-		const contactId = flags.contact ? (await resolveContactId(db, flags.contact)).id : undefined;
+		const contactId = flags.contact
+			? (await resolveContactId(db, flags.contact)).id
+			: undefined;
 		const dealId = flags.deal ? await resolveDealId(db, flags.deal) : undefined;
 
 		const task = addTask(db, {
@@ -43,7 +47,9 @@ export default class TaskAdd extends BaseCommand {
 		} else if (flags.quiet) {
 			this.log(String(task.id));
 		} else {
-			this.log(`Added task: ${task.title} (id: ${task.id}${task.due ? `, due: ${task.due}` : ""})`);
+			this.log(
+				`Added task: ${task.title} (id: ${task.id}${task.due ? `, due: ${task.due}` : ""})`,
+			);
 		}
 	}
 }

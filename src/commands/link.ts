@@ -12,16 +12,27 @@ export default class Link extends BaseCommand {
 	];
 
 	static override args = {
-		entity: Args.string({ description: "Source entity (person, org, or deal name)", required: true }),
+		entity: Args.string({
+			description: "Source entity (person, org, or deal name)",
+			required: true,
+		}),
 		target: Args.string({ description: "Target entity (for --relation)" }),
 	};
 
 	static override flags = {
 		...BaseCommand.baseFlags,
-		"works-at": Flags.string({ description: "Organization the entity works at" }),
-		"introduced-by": Flags.string({ description: "Person who introduced this entity" }),
-		"referred-by": Flags.string({ description: "Person who referred this entity" }),
-		"co-founder-of": Flags.string({ description: "Organization this person co-founded" }),
+		"works-at": Flags.string({
+			description: "Organization the entity works at",
+		}),
+		"introduced-by": Flags.string({
+			description: "Person who introduced this entity",
+		}),
+		"referred-by": Flags.string({
+			description: "Person who referred this entity",
+		}),
+		"co-founder-of": Flags.string({
+			description: "Organization this person co-founded",
+		}),
 		relation: Flags.string({ description: "Custom relation type" }),
 	};
 

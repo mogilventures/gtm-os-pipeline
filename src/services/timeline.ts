@@ -53,7 +53,9 @@ export function getTimeline(
 
 	for (const i of interactions) {
 		if (filters?.contactId && i.contact_id !== filters.contactId) continue;
-		const contactPart = i.contact_name ? ` ${i.direction === "inbound" ? "from" : "to"} ${i.contact_name}` : "";
+		const contactPart = i.contact_name
+			? ` ${i.direction === "inbound" ? "from" : "to"} ${i.contact_name}`
+			: "";
 		const subjectPart = i.subject ? `: ${i.subject}` : "";
 		events.push({
 			timestamp: i.occurred_at,

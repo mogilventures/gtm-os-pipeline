@@ -1,11 +1,11 @@
 import { eq } from "drizzle-orm";
 import type { PipelineDB } from "../db/index.js";
 import { schema } from "../db/index.js";
+import { fuzzySearch } from "../utils/fuzzy.js";
 import { getContactsForFuzzy } from "./contacts.js";
 import { getDealsForFuzzy } from "./deals.js";
 import { getOrgsForFuzzy } from "./organizations.js";
 import { getTasksForFuzzy } from "./tasks.js";
-import { fuzzySearch } from "../utils/fuzzy.js";
 
 interface SearchResult {
 	type: "contact" | "deal" | "organization" | "task";

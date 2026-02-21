@@ -1,6 +1,6 @@
 import { Flags } from "@oclif/core";
 import { BaseCommand } from "../base-command.js";
-import { getDb, schema } from "../db/index.js";
+import { getDb, type schema } from "../db/index.js";
 import {
 	approveAction,
 	approveAll,
@@ -77,7 +77,9 @@ export default class Approve extends BaseCommand {
 		if (!process.stdin.isTTY) {
 			// Non-interactive: just list
 			for (const action of pending) {
-				this.log(`#${action.id} [${action.action_type}] — ${action.reasoning || "(no reasoning)"}`);
+				this.log(
+					`#${action.id} [${action.action_type}] — ${action.reasoning || "(no reasoning)"}`,
+				);
 			}
 			this.log("\nUse --all to approve all, or --reject <id> to reject.");
 			return;

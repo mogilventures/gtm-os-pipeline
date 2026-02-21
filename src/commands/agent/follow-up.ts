@@ -4,11 +4,15 @@ import { runAgent } from "../../services/agent-runner.js";
 import { getAgent } from "../../services/subagents.js";
 
 export default class AgentFollowUp extends BaseCommand {
-	static override description = "Check stale contacts and propose follow-up emails";
+	static override description =
+		"Check stale contacts and propose follow-up emails";
 
 	static override flags = {
 		...BaseCommand.baseFlags,
-		days: Flags.integer({ description: "Days since last contact", default: 14 }),
+		days: Flags.integer({
+			description: "Days since last contact",
+			default: 14,
+		}),
 		model: Flags.string({ description: "Model to use" }),
 	};
 

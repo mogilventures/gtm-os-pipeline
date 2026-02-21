@@ -48,7 +48,9 @@ describe("contact commands", () => {
 	});
 
 	it("shows a contact", () => {
-		runPipeline(`contact:add "Jane Smith" --email jane@acme.co --org "Acme Corp" --role CTO ${dbFlag}`);
+		runPipeline(
+			`contact:add "Jane Smith" --email jane@acme.co --org "Acme Corp" --role CTO ${dbFlag}`,
+		);
 		const output = runPipeline(`contact:show jane ${dbFlag}`);
 		expect(output).toContain("Jane Smith");
 		expect(output).toContain("Acme Corp");
@@ -72,7 +74,9 @@ describe("contact commands", () => {
 	});
 
 	it("removes a tag", () => {
-		runPipeline(`contact:add "Jane Smith" --email jane@acme.co --tag investor ${dbFlag}`);
+		runPipeline(
+			`contact:add "Jane Smith" --email jane@acme.co --tag investor ${dbFlag}`,
+		);
 		const output = runPipeline(`contact:tag jane ${dbFlag} -- -investor`);
 		expect(output).not.toContain("investor");
 	});
@@ -86,14 +90,18 @@ describe("contact commands", () => {
 
 	it("adds a note", () => {
 		runPipeline(`contact:add "Jane Smith" --email jane@acme.co ${dbFlag}`);
-		const output = runPipeline(`contact:note jane "Great meeting today" ${dbFlag}`);
+		const output = runPipeline(
+			`contact:note jane "Great meeting today" ${dbFlag}`,
+		);
 		expect(output).toContain("Note added");
 	});
 
 	it("auto-creates person from email match", () => {
 		runPipeline(`contact:add "Jane Smith" --email jane@acme.co ${dbFlag}`);
 		// Adding another contact with the same email should reuse the person
-		runPipeline(`contact:add "Jane Smith" --email jane@acme.co --org "New Corp" ${dbFlag}`);
+		runPipeline(
+			`contact:add "Jane Smith" --email jane@acme.co --org "New Corp" ${dbFlag}`,
+		);
 		const output = runPipeline(`contact:list --json ${dbFlag}`);
 		const data = JSON.parse(output);
 		expect(data).toHaveLength(2);

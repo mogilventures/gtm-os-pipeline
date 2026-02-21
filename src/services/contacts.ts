@@ -284,15 +284,9 @@ export function removeContact(db: PipelineDB, contactId: number): void {
 	db.delete(schema.interactions)
 		.where(eq(schema.interactions.contact_id, contactId))
 		.run();
-	db.delete(schema.tasks)
-		.where(eq(schema.tasks.contact_id, contactId))
-		.run();
-	db.delete(schema.deals)
-		.where(eq(schema.deals.contact_id, contactId))
-		.run();
-	db.delete(schema.contacts)
-		.where(eq(schema.contacts.id, contactId))
-		.run();
+	db.delete(schema.tasks).where(eq(schema.tasks.contact_id, contactId)).run();
+	db.delete(schema.deals).where(eq(schema.deals.contact_id, contactId)).run();
+	db.delete(schema.contacts).where(eq(schema.contacts.id, contactId)).run();
 }
 
 export function addNote(

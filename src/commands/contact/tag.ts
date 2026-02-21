@@ -14,7 +14,10 @@ export default class ContactTag extends BaseCommand {
 	static override strict = false;
 
 	static override args = {
-		name: Args.string({ description: "Contact name (fuzzy match)", required: true }),
+		name: Args.string({
+			description: "Contact name (fuzzy match)",
+			required: true,
+		}),
 	};
 
 	static override flags = {
@@ -38,7 +41,9 @@ export default class ContactTag extends BaseCommand {
 		}
 
 		if (add.length === 0 && remove.length === 0) {
-			this.error("Specify tags with + to add or - to remove. Example: +investor -cold-lead");
+			this.error(
+				"Specify tags with + to add or - to remove. Example: +investor -cold-lead",
+			);
 		}
 
 		const match = await resolveContactId(db, args.name);

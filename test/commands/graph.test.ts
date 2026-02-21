@@ -10,7 +10,9 @@ describe("relationship graph", () => {
 		tmpDir = createTmpDir();
 		dbFlag = `--db ${join(tmpDir, "test.db")}`;
 		runPipeline(`init ${dbFlag}`);
-		runPipeline(`contact:add "Jane Smith" --email jane@acme.co --org "Acme Corp" --role CTO ${dbFlag}`);
+		runPipeline(
+			`contact:add "Jane Smith" --email jane@acme.co --org "Acme Corp" --role CTO ${dbFlag}`,
+		);
 		runPipeline(`contact:add "Bob Lee" --email bob@startup.io ${dbFlag}`);
 	});
 
@@ -25,7 +27,9 @@ describe("relationship graph", () => {
 	});
 
 	it("shows related entities", () => {
-		runPipeline(`deal:add "Acme Consulting" --contact jane --value 15000 --stage proposal ${dbFlag}`);
+		runPipeline(
+			`deal:add "Acme Consulting" --contact jane --value 15000 --stage proposal ${dbFlag}`,
+		);
 		runPipeline(`log:email jane --subject "Proposal sent" ${dbFlag}`);
 		runPipeline(`task:add "Follow up" --contact jane --due tomorrow ${dbFlag}`);
 		runPipeline(`link jane --works-at "Acme Corp" ${dbFlag}`);
@@ -44,7 +48,9 @@ describe("relationship graph", () => {
 
 	it("unlinks entities", () => {
 		runPipeline(`link jane --works-at "Acme Corp" ${dbFlag}`);
-		runPipeline(`unlink jane --relation works_at --target "Acme Corp" ${dbFlag}`);
+		runPipeline(
+			`unlink jane --relation works_at --target "Acme Corp" ${dbFlag}`,
+		);
 		const output = runPipeline(`related jane --json ${dbFlag}`);
 		const data = JSON.parse(output);
 		expect(data.related.edges).toHaveLength(0);

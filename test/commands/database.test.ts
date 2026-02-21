@@ -1,8 +1,8 @@
+import { join } from "node:path";
 import { eq } from "drizzle-orm";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { closeDb, getDb, resetDb, schema } from "../../src/db/index.js";
 import { cleanupTmpDir, createTmpDir } from "../helpers.js";
-import { join } from "node:path";
 
 describe("database", () => {
 	let tmpDir: string;

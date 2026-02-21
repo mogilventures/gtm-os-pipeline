@@ -10,7 +10,10 @@ export default class Related extends BaseCommand {
 	static override examples = ["<%= config.bin %> related jane"];
 
 	static override args = {
-		entity: Args.string({ description: "Entity name (person, org, or deal)", required: true }),
+		entity: Args.string({
+			description: "Entity name (person, org, or deal)",
+			required: true,
+		}),
 	};
 
 	static override flags = { ...BaseCommand.baseFlags };
@@ -58,7 +61,9 @@ export default class Related extends BaseCommand {
 		if (related.interactions.length > 0) {
 			this.log(`\n  Interactions:`);
 			for (const i of related.interactions) {
-				this.log(`    - [${i.type}] ${i.subject || "(no subject)"} (${i.occurred_at})`);
+				this.log(
+					`    - [${i.type}] ${i.subject || "(no subject)"} (${i.occurred_at})`,
+				);
 			}
 		}
 

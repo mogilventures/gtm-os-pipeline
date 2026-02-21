@@ -8,13 +8,19 @@ export default class ContactEdit extends BaseCommand {
 	static override description = "Edit a contact";
 
 	static override args = {
-		name: Args.string({ description: "Contact name (fuzzy match)", required: true }),
+		name: Args.string({
+			description: "Contact name (fuzzy match)",
+			required: true,
+		}),
 	};
 
 	static override flags = {
 		...BaseCommand.baseFlags,
 		role: Flags.string({ description: "New role" }),
-		warmth: Flags.string({ description: "New warmth", options: ["cold", "warm", "hot"] }),
+		warmth: Flags.string({
+			description: "New warmth",
+			options: ["cold", "warm", "hot"],
+		}),
 		org: Flags.string({ description: "New organization" }),
 	};
 

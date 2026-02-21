@@ -2,13 +2,13 @@ import { Flags } from "@oclif/core";
 import { stringify } from "csv-stringify/sync";
 import { BaseCommand } from "../base-command.js";
 import { getDb } from "../db/index.js";
-import type { EntityType } from "../utils/import-handlers.js";
-import { getExportHandler } from "../utils/export-handlers.js";
 import {
+	CF_PREFIX,
 	getAllCustomFieldNames,
 	getCustomFieldColumns,
-	CF_PREFIX,
 } from "../utils/custom-fields-io.js";
+import { getExportHandler } from "../utils/export-handlers.js";
+import type { EntityType } from "../utils/import-handlers.js";
 
 export default class Export extends BaseCommand {
 	static override description = "Export records as CSV or JSON";

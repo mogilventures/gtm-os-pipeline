@@ -55,7 +55,9 @@ describe("interaction logging", () => {
 	});
 
 	it("updates contact timestamp on new interaction", () => {
-		const before = JSON.parse(runPipeline(`contact:show jane --json ${dbFlag}`));
+		const before = JSON.parse(
+			runPipeline(`contact:show jane --json ${dbFlag}`),
+		);
 		// Small delay to ensure timestamp differs
 		runPipeline(`log:email jane --subject "Follow up" ${dbFlag}`);
 		const after = JSON.parse(runPipeline(`contact:show jane --json ${dbFlag}`));

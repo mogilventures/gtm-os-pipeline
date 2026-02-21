@@ -24,7 +24,10 @@ export default class Agent extends BaseCommand {
 	];
 
 	static override args = {
-		prompt: Args.string({ description: "Your question or instruction", required: true }),
+		prompt: Args.string({
+			description: "Your question or instruction",
+			required: true,
+		}),
 	};
 
 	static override flags = {

@@ -23,7 +23,8 @@ export default class Timeline extends BaseCommand {
 		}),
 		type: Flags.string({
 			char: "t",
-			description: "Filter by event type: interaction, task_completed, deal_created, deal_closed",
+			description:
+				"Filter by event type: interaction, task_completed, deal_created, deal_closed",
 		}),
 		contact: Flags.string({
 			description: "Filter by contact name (fuzzy match)",
@@ -70,13 +71,11 @@ export default class Timeline extends BaseCommand {
 		this.log(
 			formatTable(
 				["Date", "Type", "Summary"],
-				events.map((e) => [
-					e.timestamp.split("T")[0],
-					e.type,
-					e.summary,
-				]),
+				events.map((e) => [e.timestamp.split("T")[0], e.type, e.summary]),
 			),
 		);
-		this.log(`\nShowing ${events.length} event${events.length === 1 ? "" : "s"}`);
+		this.log(
+			`\nShowing ${events.length} event${events.length === 1 ? "" : "s"}`,
+		);
 	}
 }

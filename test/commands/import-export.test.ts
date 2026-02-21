@@ -1,5 +1,5 @@
-import { join } from "node:path";
 import { readFileSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { cleanupTmpDir, createTmpDir, runPipeline } from "../helpers.js";
 
@@ -35,9 +35,15 @@ Alice Kim,alice@example.com,,Designer,website`,
 		const listOutput = runPipeline(`contact:list --json ${dbFlag}`);
 		const contacts = JSON.parse(listOutput);
 		expect(contacts).toHaveLength(3);
-		expect(contacts.some((c: { name: string }) => c.name === "Jane Smith")).toBe(true);
-		expect(contacts.some((c: { name: string }) => c.name === "Bob Lee")).toBe(true);
-		expect(contacts.some((c: { name: string }) => c.name === "Alice Kim")).toBe(true);
+		expect(
+			contacts.some((c: { name: string }) => c.name === "Jane Smith"),
+		).toBe(true);
+		expect(contacts.some((c: { name: string }) => c.name === "Bob Lee")).toBe(
+			true,
+		);
+		expect(contacts.some((c: { name: string }) => c.name === "Alice Kim")).toBe(
+			true,
+		);
 	});
 
 	it("handles first/last name columns", () => {
@@ -54,8 +60,12 @@ Jane,Smith,jane@test.com`,
 
 		const listOutput = runPipeline(`contact:list --json ${dbFlag}`);
 		const contacts = JSON.parse(listOutput);
-		expect(contacts.some((c: { name: string }) => c.name === "John Doe")).toBe(true);
-		expect(contacts.some((c: { name: string }) => c.name === "Jane Smith")).toBe(true);
+		expect(contacts.some((c: { name: string }) => c.name === "John Doe")).toBe(
+			true,
+		);
+		expect(
+			contacts.some((c: { name: string }) => c.name === "Jane Smith"),
+		).toBe(true);
 	});
 
 	it("skips rows without a name", () => {
@@ -139,14 +149,18 @@ Acme Corp,acme.co,Software,100-500,San Francisco
 Globex,globex.com,Manufacturing,500+,Chicago`,
 		);
 
-		const output = runPipeline(`import ${csvPath} --type organizations ${dbFlag}`);
+		const output = runPipeline(
+			`import ${csvPath} --type organizations ${dbFlag}`,
+		);
 		expect(output).toContain("Found 2 records");
 		expect(output).toContain("Imported: 2");
 
 		const listOutput = runPipeline(`org:list --json ${dbFlag}`);
 		const orgs = JSON.parse(listOutput);
 		expect(orgs).toHaveLength(2);
-		expect(orgs.some((o: { name: string }) => o.name === "Acme Corp")).toBe(true);
+		expect(orgs.some((o: { name: string }) => o.name === "Acme Corp")).toBe(
+			true,
+		);
 		expect(orgs.some((o: { name: string }) => o.name === "Globex")).toBe(true);
 	});
 
@@ -158,7 +172,9 @@ Globex,globex.com,Manufacturing,500+,Chicago`,
 Acme Corp,"enterprise, target"`,
 		);
 
-		const output = runPipeline(`import ${csvPath} --type organizations ${dbFlag}`);
+		const output = runPipeline(
+			`import ${csvPath} --type organizations ${dbFlag}`,
+		);
 		expect(output).toContain("Imported: 1");
 	});
 
@@ -170,7 +186,9 @@ Acme Corp,"enterprise, target"`,
 acme.co,Software`,
 		);
 
-		const output = runPipeline(`import ${csvPath} --type organizations ${dbFlag}`);
+		const output = runPipeline(
+			`import ${csvPath} --type organizations ${dbFlag}`,
+		);
 		expect(output).toContain("Skipped: 1");
 	});
 
@@ -178,7 +196,9 @@ acme.co,Software`,
 
 	it("imports deals with FK resolution", () => {
 		// Pre-create contact and org
-		runPipeline(`contact:add "Jane Smith" --email jane@acme.co --org "Acme Corp" ${dbFlag}`);
+		runPipeline(
+			`contact:add "Jane Smith" --email jane@acme.co --org "Acme Corp" ${dbFlag}`,
+		);
 
 		const csvPath = join(tmpDir, "deals.csv");
 		writeFileSync(
@@ -190,7 +210,9 @@ Acme Consulting,Jane Smith,Acme Corp,"$15,000",proposal,high`,
 		const output = runPipeline(`import ${csvPath} --type deals ${dbFlag}`);
 		expect(output).toContain("Imported: 1");
 
-		const exportOutput = runPipeline(`export --type deals --format json ${dbFlag}`);
+		const exportOutput = runPipeline(
+			`export --type deals --format json ${dbFlag}`,
+		);
 		const deals = JSON.parse(exportOutput);
 		expect(deals).toHaveLength(1);
 		expect(deals[0].title).toBe("Acme Consulting");
@@ -235,10 +257,14 @@ Simple Deal,5000,lead`,
 Jane Smith,email,outbound,Follow-up,Thanks for the meeting`,
 		);
 
-		const output = runPipeline(`import ${csvPath} --type interactions ${dbFlag}`);
+		const output = runPipeline(
+			`import ${csvPath} --type interactions ${dbFlag}`,
+		);
 		expect(output).toContain("Imported: 1");
 
-		const exportOutput = runPipeline(`export --type interactions --format json ${dbFlag}`);
+		const exportOutput = runPipeline(
+			`export --type interactions --format json ${dbFlag}`,
+		);
 		const interactions = JSON.parse(exportOutput);
 		expect(interactions).toHaveLength(1);
 		expect(interactions[0].type).toBe("email");
@@ -253,7 +279,9 @@ Jane Smith,email,outbound,Follow-up,Thanks for the meeting`,
 email,Hello`,
 		);
 
-		const output = runPipeline(`import ${csvPath} --type interactions ${dbFlag}`);
+		const output = runPipeline(
+			`import ${csvPath} --type interactions ${dbFlag}`,
+		);
 		expect(output).toContain("Skipped: 1");
 	});
 
@@ -265,7 +293,9 @@ email,Hello`,
 NonExistent Person,email,Hello`,
 		);
 
-		const output = runPipeline(`import ${csvPath} --type interactions ${dbFlag}`);
+		const output = runPipeline(
+			`import ${csvPath} --type interactions ${dbFlag}`,
+		);
 		expect(output).toContain("Skipped: 1");
 	});
 
@@ -283,10 +313,14 @@ Send proposal,2026-04-01`,
 		const output = runPipeline(`import ${csvPath} --type tasks ${dbFlag}`);
 		expect(output).toContain("Imported: 2");
 
-		const exportOutput = runPipeline(`export --type tasks --format json ${dbFlag}`);
+		const exportOutput = runPipeline(
+			`export --type tasks --format json ${dbFlag}`,
+		);
 		const tasks = JSON.parse(exportOutput);
 		expect(tasks).toHaveLength(2);
-		expect(tasks.some((t: { title: string }) => t.title === "Follow up with Jane")).toBe(true);
+		expect(
+			tasks.some((t: { title: string }) => t.title === "Follow up with Jane"),
+		).toBe(true);
 	});
 
 	it("imports tasks with FK resolution", () => {
@@ -302,7 +336,9 @@ Follow up with Jane,Jane Smith,2026-03-15`,
 		const output = runPipeline(`import ${csvPath} --type tasks ${dbFlag}`);
 		expect(output).toContain("Imported: 1");
 
-		const exportOutput = runPipeline(`export --type tasks --format json ${dbFlag}`);
+		const exportOutput = runPipeline(
+			`export --type tasks --format json ${dbFlag}`,
+		);
 		const tasks = JSON.parse(exportOutput);
 		expect(tasks[0].contact_name).toBe("Jane Smith");
 	});
@@ -328,8 +364,12 @@ describe("export command", () => {
 		tmpDir = createTmpDir();
 		dbFlag = `--db ${join(tmpDir, "test.db")}`;
 		runPipeline(`init ${dbFlag}`);
-		runPipeline(`contact:add "Jane Smith" --email jane@acme.co --org "Acme Corp" --role CTO ${dbFlag}`);
-		runPipeline(`contact:add "Bob Lee" --email bob@startup.io --tag investor ${dbFlag}`);
+		runPipeline(
+			`contact:add "Jane Smith" --email jane@acme.co --org "Acme Corp" --role CTO ${dbFlag}`,
+		);
+		runPipeline(
+			`contact:add "Bob Lee" --email bob@startup.io --tag investor ${dbFlag}`,
+		);
 	});
 
 	afterEach(() => {
@@ -384,14 +424,20 @@ describe("export command", () => {
 	// ── Organization export tests ────────────────────────────────
 
 	it("exports organizations as JSON", () => {
-		const output = runPipeline(`export --type organizations --format json ${dbFlag}`);
+		const output = runPipeline(
+			`export --type organizations --format json ${dbFlag}`,
+		);
 		const orgs = JSON.parse(output);
 		expect(orgs.length).toBeGreaterThanOrEqual(1);
-		expect(orgs.some((o: { name: string }) => o.name === "Acme Corp")).toBe(true);
+		expect(orgs.some((o: { name: string }) => o.name === "Acme Corp")).toBe(
+			true,
+		);
 	});
 
 	it("exports organizations as CSV", () => {
-		const output = runPipeline(`export --type organizations --format csv ${dbFlag}`);
+		const output = runPipeline(
+			`export --type organizations --format csv ${dbFlag}`,
+		);
 		expect(output).toContain("name");
 		expect(output).toContain("Acme Corp");
 	});
@@ -399,7 +445,9 @@ describe("export command", () => {
 	// ── Deal export tests ────────────────────────────────────────
 
 	it("exports deals as JSON", () => {
-		runPipeline(`deal:add "Acme Deal" --contact "Jane Smith" --value 10000 ${dbFlag}`);
+		runPipeline(
+			`deal:add "Acme Deal" --contact "Jane Smith" --value 10000 ${dbFlag}`,
+		);
 
 		const output = runPipeline(`export --type deals --format json ${dbFlag}`);
 		const deals = JSON.parse(output);
@@ -409,7 +457,9 @@ describe("export command", () => {
 	});
 
 	it("exports deals as CSV", () => {
-		runPipeline(`deal:add "Acme Deal" --contact "Jane Smith" --value 10000 ${dbFlag}`);
+		runPipeline(
+			`deal:add "Acme Deal" --contact "Jane Smith" --value 10000 ${dbFlag}`,
+		);
 
 		const output = runPipeline(`export --type deals --format csv ${dbFlag}`);
 		expect(output).toContain("title");
@@ -420,18 +470,26 @@ describe("export command", () => {
 	// ── Interaction export tests ─────────────────────────────────
 
 	it("exports interactions as JSON", () => {
-		runPipeline(`log:email "Jane Smith" --subject "Follow-up" --body "Thanks" ${dbFlag}`);
+		runPipeline(
+			`log:email "Jane Smith" --subject "Follow-up" --body "Thanks" ${dbFlag}`,
+		);
 
-		const output = runPipeline(`export --type interactions --format json ${dbFlag}`);
+		const output = runPipeline(
+			`export --type interactions --format json ${dbFlag}`,
+		);
 		const interactions = JSON.parse(output);
 		expect(interactions.length).toBeGreaterThanOrEqual(1);
 		expect(interactions[0].type).toBe("email");
 	});
 
 	it("exports interactions as CSV", () => {
-		runPipeline(`log:email "Jane Smith" --subject "Follow-up" --body "Thanks" ${dbFlag}`);
+		runPipeline(
+			`log:email "Jane Smith" --subject "Follow-up" --body "Thanks" ${dbFlag}`,
+		);
 
-		const output = runPipeline(`export --type interactions --format csv ${dbFlag}`);
+		const output = runPipeline(
+			`export --type interactions --format csv ${dbFlag}`,
+		);
 		expect(output).toContain("type");
 		expect(output).toContain("email");
 	});
@@ -439,7 +497,9 @@ describe("export command", () => {
 	// ── Task export tests ────────────────────────────────────────
 
 	it("exports tasks as JSON", () => {
-		runPipeline(`task:add "Follow up" --contact "Jane Smith" --due 2026-03-15 ${dbFlag}`);
+		runPipeline(
+			`task:add "Follow up" --contact "Jane Smith" --due 2026-03-15 ${dbFlag}`,
+		);
 
 		const output = runPipeline(`export --type tasks --format json ${dbFlag}`);
 		const tasks = JSON.parse(output);
@@ -448,7 +508,9 @@ describe("export command", () => {
 	});
 
 	it("exports tasks as CSV", () => {
-		runPipeline(`task:add "Follow up" --contact "Jane Smith" --due 2026-03-15 ${dbFlag}`);
+		runPipeline(
+			`task:add "Follow up" --contact "Jane Smith" --due 2026-03-15 ${dbFlag}`,
+		);
 
 		const output = runPipeline(`export --type tasks --format csv ${dbFlag}`);
 		expect(output).toContain("title");
@@ -482,10 +544,14 @@ describe("custom fields import/export", () => {
 	});
 
 	it("exports organizations with custom fields as JSON", () => {
-		runPipeline(`contact:add "Jane Smith" --email jane@acme.co --org "Acme Corp" ${dbFlag}`);
+		runPipeline(
+			`contact:add "Jane Smith" --email jane@acme.co --org "Acme Corp" ${dbFlag}`,
+		);
 		runPipeline(`field:set org:acme tier enterprise ${dbFlag}`);
 
-		const output = runPipeline(`export --type organizations --format json ${dbFlag}`);
+		const output = runPipeline(
+			`export --type organizations --format json ${dbFlag}`,
+		);
 		const orgs = JSON.parse(output);
 		const acme = orgs.find((o: { name: string }) => o.name === "Acme Corp");
 		expect(acme.custom_fields).toBeDefined();
@@ -503,7 +569,9 @@ Jane Smith,jane@acme.co,85,enterprise`,
 		const output = runPipeline(`import ${csvPath} ${dbFlag}`);
 		expect(output).toContain("Imported: 1");
 
-		const fieldOutput = runPipeline(`field:get contact:jane -f lead_score --json ${dbFlag}`);
+		const fieldOutput = runPipeline(
+			`field:get contact:jane -f lead_score --json ${dbFlag}`,
+		);
 		const field = JSON.parse(fieldOutput);
 		expect(field.field_value).toBe("85");
 	});
@@ -523,7 +591,9 @@ Jane Smith,jane@acme.co,85,enterprise`,
 		runPipeline(`init ${freshDbFlag}`);
 		runPipeline(`import ${csvPath} ${freshDbFlag}`);
 
-		const fieldOutput = runPipeline(`field:get contact:jane -f lead_score --json ${freshDbFlag}`);
+		const fieldOutput = runPipeline(
+			`field:get contact:jane -f lead_score --json ${freshDbFlag}`,
+		);
 		const field = JSON.parse(fieldOutput);
 		expect(field.field_value).toBe("85");
 		cleanupTmpDir(freshDir);
@@ -539,13 +609,19 @@ Jane Smith,jane@acme.co,90,gold,west`,
 
 		runPipeline(`import ${csvPath} ${dbFlag}`);
 
-		const scoreOutput = runPipeline(`field:get contact:jane -f score --json ${dbFlag}`);
+		const scoreOutput = runPipeline(
+			`field:get contact:jane -f score --json ${dbFlag}`,
+		);
 		expect(JSON.parse(scoreOutput).field_value).toBe("90");
 
-		const tierOutput = runPipeline(`field:get contact:jane -f tier --json ${dbFlag}`);
+		const tierOutput = runPipeline(
+			`field:get contact:jane -f tier --json ${dbFlag}`,
+		);
 		expect(JSON.parse(tierOutput).field_value).toBe("gold");
 
-		const regionOutput = runPipeline(`field:get contact:jane -f region --json ${dbFlag}`);
+		const regionOutput = runPipeline(
+			`field:get contact:jane -f region --json ${dbFlag}`,
+		);
 		expect(JSON.parse(regionOutput).field_value).toBe("west");
 	});
 
@@ -614,7 +690,9 @@ Big Deal,5000,lead,not-a-date`,
 		const output = runPipeline(`import ${csvPath} --type deals ${dbFlag}`);
 		expect(output).toContain("Imported: 1");
 
-		const exportOutput = runPipeline(`export --type deals --format json ${dbFlag}`);
+		const exportOutput = runPipeline(
+			`export --type deals --format json ${dbFlag}`,
+		);
 		const deals = JSON.parse(exportOutput);
 		expect(deals[0].expected_close).toBeFalsy();
 	});
@@ -630,7 +708,9 @@ Follow up,invalid-date`,
 		const output = runPipeline(`import ${csvPath} --type tasks ${dbFlag}`);
 		expect(output).toContain("Imported: 1");
 
-		const exportOutput = runPipeline(`export --type tasks --format json ${dbFlag}`);
+		const exportOutput = runPipeline(
+			`export --type tasks --format json ${dbFlag}`,
+		);
 		const tasks = JSON.parse(exportOutput);
 		expect(tasks[0].due).toBeFalsy();
 	});
@@ -698,7 +778,9 @@ describe("round-trip fidelity", () => {
 	});
 
 	it("contacts full round-trip preserves data", () => {
-		runPipeline(`contact:add "Jane Smith" --email jane@acme.co --org "Acme Corp" --role CTO --source linkedin ${dbFlag}`);
+		runPipeline(
+			`contact:add "Jane Smith" --email jane@acme.co --org "Acme Corp" --role CTO --source linkedin ${dbFlag}`,
+		);
 
 		// Export
 		const csvOutput = runPipeline(`export --format csv ${dbFlag}`);
@@ -740,7 +822,9 @@ describe("round-trip fidelity", () => {
 		runPipeline(`init ${freshDbFlag}`);
 		runPipeline(`import ${csvPath} --type tasks ${freshDbFlag}`);
 
-		const freshCsv = runPipeline(`export --type tasks --format csv ${freshDbFlag}`);
+		const freshCsv = runPipeline(
+			`export --type tasks --format csv ${freshDbFlag}`,
+		);
 		expect(freshCsv).toContain("Follow up");
 		expect(freshCsv).toContain("yes");
 		cleanupTmpDir(freshDir);
@@ -748,10 +832,14 @@ describe("round-trip fidelity", () => {
 
 	it("interactions round-trip with occurred_at preserved", () => {
 		runPipeline(`contact:add "Jane Smith" --email jane@acme.co ${dbFlag}`);
-		runPipeline(`log:email "Jane Smith" --subject "Follow-up" --body "Thanks" ${dbFlag}`);
+		runPipeline(
+			`log:email "Jane Smith" --subject "Follow-up" --body "Thanks" ${dbFlag}`,
+		);
 
 		// Export
-		const csvOutput = runPipeline(`export --type interactions --format csv ${dbFlag}`);
+		const csvOutput = runPipeline(
+			`export --type interactions --format csv ${dbFlag}`,
+		);
 		const csvPath = join(tmpDir, "interactions.csv");
 		writeFileSync(csvPath, csvOutput);
 
@@ -759,11 +847,17 @@ describe("round-trip fidelity", () => {
 		const freshDir = createTmpDir();
 		const freshDbFlag = `--db ${join(freshDir, "fresh.db")}`;
 		runPipeline(`init ${freshDbFlag}`);
-		runPipeline(`contact:add "Jane Smith" --email jane2@acme.co ${freshDbFlag}`);
+		runPipeline(
+			`contact:add "Jane Smith" --email jane2@acme.co ${freshDbFlag}`,
+		);
 		runPipeline(`import ${csvPath} --type interactions ${freshDbFlag}`);
 
-		const originalJson = runPipeline(`export --type interactions --format json ${dbFlag}`);
-		const freshJson = runPipeline(`export --type interactions --format json ${freshDbFlag}`);
+		const originalJson = runPipeline(
+			`export --type interactions --format json ${dbFlag}`,
+		);
+		const freshJson = runPipeline(
+			`export --type interactions --format json ${freshDbFlag}`,
+		);
 		const original = JSON.parse(originalJson);
 		const fresh = JSON.parse(freshJson);
 
@@ -774,7 +868,9 @@ describe("round-trip fidelity", () => {
 	});
 
 	it("tags round-trip preserves comma-separated tags", () => {
-		runPipeline(`contact:add "Jane Smith" --email jane@acme.co --tag investor --tag advisor ${dbFlag}`);
+		runPipeline(
+			`contact:add "Jane Smith" --email jane@acme.co --tag investor --tag advisor ${dbFlag}`,
+		);
 
 		const csvOutput = runPipeline(`export --format csv ${dbFlag}`);
 		const csvPath = join(tmpDir, "tags.csv");
@@ -793,8 +889,12 @@ describe("round-trip fidelity", () => {
 	});
 
 	it("deals round-trip with FK resolution by name", () => {
-		runPipeline(`contact:add "Jane Smith" --email jane@acme.co --org "Acme Corp" ${dbFlag}`);
-		runPipeline(`deal:add "Acme Deal" --contact "Jane Smith" --org "Acme Corp" --value 10000 --stage proposal ${dbFlag}`);
+		runPipeline(
+			`contact:add "Jane Smith" --email jane@acme.co --org "Acme Corp" ${dbFlag}`,
+		);
+		runPipeline(
+			`deal:add "Acme Deal" --contact "Jane Smith" --org "Acme Corp" --value 10000 --stage proposal ${dbFlag}`,
+		);
 
 		const csvOutput = runPipeline(`export --type deals --format csv ${dbFlag}`);
 		const csvPath = join(tmpDir, "deals.csv");
@@ -804,10 +904,14 @@ describe("round-trip fidelity", () => {
 		const freshDbFlag = `--db ${join(freshDir, "fresh.db")}`;
 		runPipeline(`init ${freshDbFlag}`);
 		// Create the contact/org first so FK resolution works
-		runPipeline(`contact:add "Jane Smith" --email jane2@acme.co --org "Acme Corp" ${freshDbFlag}`);
+		runPipeline(
+			`contact:add "Jane Smith" --email jane2@acme.co --org "Acme Corp" ${freshDbFlag}`,
+		);
 		runPipeline(`import ${csvPath} --type deals ${freshDbFlag}`);
 
-		const freshJson = runPipeline(`export --type deals --format json ${freshDbFlag}`);
+		const freshJson = runPipeline(
+			`export --type deals --format json ${freshDbFlag}`,
+		);
 		const fresh = JSON.parse(freshJson);
 		expect(fresh).toHaveLength(1);
 		expect(fresh[0].title).toBe("Acme Deal");

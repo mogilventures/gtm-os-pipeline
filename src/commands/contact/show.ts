@@ -10,7 +10,10 @@ export default class ContactShow extends BaseCommand {
 	static override description = "Show contact details";
 
 	static override args = {
-		name: Args.string({ description: "Contact name (fuzzy match)", required: true }),
+		name: Args.string({
+			description: "Contact name (fuzzy match)",
+			required: true,
+		}),
 	};
 
 	static override flags = {
@@ -40,12 +43,15 @@ export default class ContactShow extends BaseCommand {
 		if (detail.org_name) this.log(`  Org:     ${detail.org_name}`);
 		if (detail.role) this.log(`  Role:    ${detail.role}`);
 		this.log(`  Warmth:  ${detail.warmth}`);
-		if (detail.tags.length > 0) this.log(`  Tags:    ${detail.tags.join(", ")}`);
+		if (detail.tags.length > 0)
+			this.log(`  Tags:    ${detail.tags.join(", ")}`);
 
 		if (detail.interactions.length > 0) {
 			this.log(`\n  Interactions (${detail.interactions.length}):`);
 			for (const i of detail.interactions.slice(0, 5)) {
-				this.log(`    - [${i.type}] ${i.subject || i.body || "(no subject)"} (${i.occurred_at})`);
+				this.log(
+					`    - [${i.type}] ${i.subject || i.body || "(no subject)"} (${i.occurred_at})`,
+				);
 			}
 		}
 
@@ -60,7 +66,9 @@ export default class ContactShow extends BaseCommand {
 			this.log(`\n  Tasks (${detail.tasks.length}):`);
 			for (const t of detail.tasks) {
 				const status = t.completed ? "done" : "open";
-				this.log(`    - [${status}] ${t.title}${t.due ? ` (due: ${t.due})` : ""}`);
+				this.log(
+					`    - [${status}] ${t.title}${t.due ? ` (due: ${t.due})` : ""}`,
+				);
 			}
 		}
 

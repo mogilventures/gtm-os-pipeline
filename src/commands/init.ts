@@ -1,10 +1,16 @@
 import { existsSync } from "node:fs";
 import { BaseCommand } from "../base-command.js";
-import { getConfigPath, getDefaultConfig, getPipelineDir, saveConfig } from "../config.js";
+import {
+	getConfigPath,
+	getDefaultConfig,
+	getPipelineDir,
+	saveConfig,
+} from "../config.js";
 import { getDb, getDbPath } from "../db/index.js";
 
 export default class Init extends BaseCommand {
-	static override description = "Initialize Pipeline CRM (creates ~/.pipeline/ with DB and config)";
+	static override description =
+		"Initialize Pipeline CRM (creates ~/.pipeline/ with DB and config)";
 
 	static override examples = ["<%= config.bin %> init"];
 

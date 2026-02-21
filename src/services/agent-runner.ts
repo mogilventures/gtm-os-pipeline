@@ -1,10 +1,7 @@
+import { Client } from "@modelcontextprotocol/sdk/client";
+import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 import { loadConfig } from "../config.js";
 import { getDbPath } from "../db/index.js";
-
-// @ts-ignore — MCP SDK subpath exports
-import { Client } from "@modelcontextprotocol/sdk/client";
-// @ts-ignore
-import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 
 interface AgentRunOptions {
 	prompt: string;
@@ -24,12 +21,17 @@ export async function runAgent(opts: AgentRunOptions): Promise<void> {
 	}
 
 	const config = loadConfig();
-	const model = opts.model || (config.agent.model as string) || "claude-sonnet-4-6";
+	const model =
+		opts.model || (config.agent.model as string) || "claude-sonnet-4-6";
 	const dbPath = getDbPath(opts.dbPath);
 
 	const transport = new StdioClientTransport({
 		command: "node",
-		args: [new URL("../../bin/mcp.js", import.meta.url).pathname, "--db", dbPath],
+		args: [
+			new URL("../../bin/mcp.js", import.meta.url).pathname,
+			"--db",
+			dbPath,
+		],
 	});
 	const mcpClient = new Client({ name: "pipeline-agent", version: "0.1.0" });
 	await mcpClient.connect(transport);
@@ -76,7 +78,9 @@ export async function runAgent(opts: AgentRunOptions): Promise<void> {
 						toolResults.push({
 							type: "tool_result",
 							tool_use_id: block.id,
-							content: (result.content as Array<{ text: string }>).map((c) => c.text).join("\n"),
+							content: (result.content as Array<{ text: string }>)
+								.map((c) => c.text)
+								.join("\n"),
 						});
 					} catch (error) {
 						toolResults.push({

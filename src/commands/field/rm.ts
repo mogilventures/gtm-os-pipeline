@@ -31,11 +31,16 @@ export default class FieldRm extends BaseCommand {
 		const { args, flags } = await this.parse(FieldRm);
 		const db = getDb(flags.db);
 
-		const { entityType, entityId, entityName } = await resolveEntity(db, args.entity);
+		const { entityType, entityId, entityName } = await resolveEntity(
+			db,
+			args.entity,
+		);
 		removeField(db, entityType, entityId, args.field_name);
 
 		if (flags.json) {
-			this.log(JSON.stringify({ removed: args.field_name, entityType, entityId }));
+			this.log(
+				JSON.stringify({ removed: args.field_name, entityType, entityId }),
+			);
 		} else if (!flags.quiet) {
 			this.log(
 				`Removed field "${args.field_name}" from ${entityType} ${entityName} (id: ${entityId})`,

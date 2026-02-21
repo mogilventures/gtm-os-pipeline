@@ -1,7 +1,7 @@
 import { and, eq, lte } from "drizzle-orm";
+import { loadConfig } from "../config.js";
 import type { PipelineDB } from "../db/index.js";
 import { schema } from "../db/index.js";
-import { loadConfig } from "../config.js";
 
 interface AddDealInput {
 	title: string;
@@ -126,11 +126,7 @@ export function closeDeal(
 		.run();
 }
 
-export function addDealNote(
-	db: PipelineDB,
-	dealId: number,
-	body: string,
-) {
+export function addDealNote(db: PipelineDB, dealId: number, body: string) {
 	const deal = db
 		.select()
 		.from(schema.deals)

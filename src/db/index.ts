@@ -1,8 +1,8 @@
+import { mkdirSync } from "node:fs";
+import { homedir } from "node:os";
+import { dirname, join } from "node:path";
 import Database from "better-sqlite3";
 import { drizzle } from "drizzle-orm/better-sqlite3";
-import { mkdirSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { homedir } from "node:os";
 import * as schema from "./schema.js";
 
 export { schema };
@@ -167,6 +167,27 @@ function runMigrations(db: Database.Database): void {
 
 		CREATE INDEX IF NOT EXISTS idx_custom_fields_entity ON custom_fields(entity_type, entity_id);
 		CREATE INDEX IF NOT EXISTS idx_custom_fields_name ON custom_fields(field_name);
+
+		CREATE TABLE IF NOT EXISTS schedules (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			agent_name TEXT NOT NULL UNIQUE,
+			interval TEXT NOT NULL,
+			enabled INTEGER NOT NULL DEFAULT 1,
+			last_run_at TEXT,
+			created_at TEXT NOT NULL DEFAULT (datetime('now'))
+		);
+
+		CREATE TABLE IF NOT EXISTS schedule_logs (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			schedule_id INTEGER NOT NULL REFERENCES schedules(id),
+			agent_name TEXT NOT NULL,
+			started_at TEXT NOT NULL,
+			finished_at TEXT,
+			status TEXT NOT NULL DEFAULT 'running',
+			output TEXT,
+			actions_proposed INTEGER DEFAULT 0,
+			created_at TEXT NOT NULL DEFAULT (datetime('now'))
+		);
 	`);
 
 	// Add email columns to interactions (idempotent migration)

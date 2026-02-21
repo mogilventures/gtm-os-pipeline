@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import type { PipelineDB } from "../db/index.js";
 import { schema } from "../db/index.js";
-import { fetchInboundEmails, fetchInboundEmailDetail } from "./email.js";
+import { fetchInboundEmailDetail, fetchInboundEmails } from "./email.js";
 
 interface SyncResult {
 	synced: number;

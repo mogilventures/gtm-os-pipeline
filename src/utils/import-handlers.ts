@@ -2,12 +2,12 @@ import { eq } from "drizzle-orm";
 import type { PipelineDB } from "../db/index.js";
 import { schema } from "../db/index.js";
 import { addContact } from "../services/contacts.js";
-import { addOrganization } from "../services/organizations.js";
 import { addDeal } from "../services/deals.js";
 import { logInteraction } from "../services/interactions.js";
+import { addOrganization } from "../services/organizations.js";
 import { addTask, completeTask } from "../services/tasks.js";
-import { isValidEmail, parseDate, parseBool } from "./validation.js";
 import { CF_PREFIX } from "./custom-fields-io.js";
+import { isValidEmail, parseBool, parseDate } from "./validation.js";
 
 // ── Shared helpers ──────────────────────────────────────────────
 
@@ -45,24 +45,22 @@ export function resolveContactByName(
 		.from(schema.contacts)
 		.innerJoin(schema.people, eq(schema.contacts.person_id, schema.people.id))
 		.all()
-		.find(
-			(r) => {
-				const person = db
-					.select({ name: schema.people.name })
-					.from(schema.people)
-					.innerJoin(schema.contacts, eq(schema.contacts.person_id, schema.people.id))
-					.where(eq(schema.contacts.id, r.id))
-					.get();
-				return person?.name.toLowerCase() === name.toLowerCase();
-			},
-		);
+		.find((r) => {
+			const person = db
+				.select({ name: schema.people.name })
+				.from(schema.people)
+				.innerJoin(
+					schema.contacts,
+					eq(schema.contacts.person_id, schema.people.id),
+				)
+				.where(eq(schema.contacts.id, r.id))
+				.get();
+			return person?.name.toLowerCase() === name.toLowerCase();
+		});
 	return row?.id ?? null;
 }
 
-export function resolveOrgByName(
-	db: PipelineDB,
-	name: string,
-): number | null {
+export function resolveOrgByName(db: PipelineDB, name: string): number | null {
 	const row = db
 		.select()
 		.from(schema.organizations)
@@ -93,8 +91,15 @@ function parseValue(raw: string): number | undefined {
 
 export interface ImportHandler {
 	columnMap: Record<string, string>;
-	previewRow(row: Record<string, string>, mapping: Record<string, string>): string;
-	importRow(db: PipelineDB, row: Record<string, string>, mapping: Record<string, string>): number;
+	previewRow(
+		row: Record<string, string>,
+		mapping: Record<string, string>,
+	): string;
+	importRow(
+		db: PipelineDB,
+		row: Record<string, string>,
+		mapping: Record<string, string>,
+	): number;
 }
 
 // ── Contacts handler ────────────────────────────────────────────
@@ -145,7 +150,9 @@ const contactsHandler: ImportHandler = {
 		let email = getMappedValue(row, mapping, "email") || undefined;
 		if (email) {
 			if (!isValidEmail(email)) {
-				console.warn(`Invalid email "${email}" — importing contact without email`);
+				console.warn(
+					`Invalid email "${email}" — importing contact without email`,
+				);
 				email = undefined;
 			} else {
 				// Duplicate detection
@@ -155,7 +162,9 @@ const contactsHandler: ImportHandler = {
 					.where(eq(schema.people.email, email))
 					.get();
 				if (existing) {
-					throw new Error(`Duplicate: contact with email ${email} already exists`);
+					throw new Error(
+						`Duplicate: contact with email ${email} already exists`,
+					);
 				}
 			}
 		}
@@ -268,17 +277,20 @@ const dealsHandler: ImportHandler = {
 		const rawValue = getMappedValue(row, mapping, "value");
 
 		const contactId = contactName
-			? resolveContactByName(db, contactName) ?? undefined
+			? (resolveContactByName(db, contactName) ?? undefined)
 			: undefined;
 		const orgId = orgName
-			? resolveOrgByName(db, orgName) ?? undefined
+			? (resolveOrgByName(db, orgName) ?? undefined)
 			: undefined;
 
-		let expectedClose = getMappedValue(row, mapping, "expected_close") || undefined;
+		let expectedClose =
+			getMappedValue(row, mapping, "expected_close") || undefined;
 		if (expectedClose) {
 			const parsed = parseDate(expectedClose);
 			if (!parsed) {
-				console.warn(`Invalid date "${expectedClose}" — importing deal without expected_close`);
+				console.warn(
+					`Invalid date "${expectedClose}" — importing deal without expected_close`,
+				);
 				expectedClose = undefined;
 			} else {
 				expectedClose = parsed;
@@ -331,11 +343,12 @@ const interactionsHandler: ImportHandler = {
 		if (!type) throw new Error("No type");
 
 		const contactId = resolveContactByName(db, contactName);
-		if (contactId === null) throw new Error(`Contact not found: ${contactName}`);
+		if (contactId === null)
+			throw new Error(`Contact not found: ${contactName}`);
 
 		const dealTitle = getMappedValue(row, mapping, "deal");
 		const dealId = dealTitle
-			? resolveDealByTitle(db, dealTitle) ?? undefined
+			? (resolveDealByTitle(db, dealTitle) ?? undefined)
 			: undefined;
 
 		let occurredAt = getMappedValue(row, mapping, "occurred_at") || undefined;
@@ -344,7 +357,9 @@ const interactionsHandler: ImportHandler = {
 			if (!occurredAt.includes("T")) {
 				const parsed = parseDate(occurredAt);
 				if (!parsed) {
-					console.warn(`Invalid date "${occurredAt}" — importing interaction without occurred_at`);
+					console.warn(
+						`Invalid date "${occurredAt}" — importing interaction without occurred_at`,
+					);
 					occurredAt = undefined;
 				} else {
 					occurredAt = parsed;
@@ -397,10 +412,10 @@ const tasksHandler: ImportHandler = {
 		const dealTitle = getMappedValue(row, mapping, "deal");
 
 		const contactId = contactName
-			? resolveContactByName(db, contactName) ?? undefined
+			? (resolveContactByName(db, contactName) ?? undefined)
 			: undefined;
 		const dealId = dealTitle
-			? resolveDealByTitle(db, dealTitle) ?? undefined
+			? (resolveDealByTitle(db, dealTitle) ?? undefined)
 			: undefined;
 
 		let due = getMappedValue(row, mapping, "due") || undefined;

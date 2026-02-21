@@ -22,9 +22,7 @@ describe("timeline command", () => {
 	});
 
 	it("shows interactions in timeline", () => {
-		runPipeline(
-			`contact:add "Jane Smith" --email jane@acme.co ${dbFlag}`,
-		);
+		runPipeline(`contact:add "Jane Smith" --email jane@acme.co ${dbFlag}`);
 		runPipeline(
 			`log:email jane --direction outbound --subject "Proposal" --body "See attached" ${dbFlag}`,
 		);
@@ -35,15 +33,11 @@ describe("timeline command", () => {
 	});
 
 	it("filters by type", () => {
-		runPipeline(
-			`contact:add "Jane Smith" --email jane@acme.co ${dbFlag}`,
-		);
+		runPipeline(`contact:add "Jane Smith" --email jane@acme.co ${dbFlag}`);
 		runPipeline(
 			`log:email jane --direction outbound --subject "Hello" --body "Hi" ${dbFlag}`,
 		);
-		runPipeline(
-			`deal:add "Test Deal" --contact jane --value 5000 ${dbFlag}`,
-		);
+		runPipeline(`deal:add "Test Deal" --contact jane --value 5000 ${dbFlag}`);
 
 		const interactionsOnly = runPipeline(
 			`timeline --type interaction ${dbFlag}`,
@@ -51,16 +45,12 @@ describe("timeline command", () => {
 		expect(interactionsOnly).toContain("interaction");
 		expect(interactionsOnly).not.toContain("deal_created");
 
-		const dealsOnly = runPipeline(
-			`timeline --type deal_created ${dbFlag}`,
-		);
+		const dealsOnly = runPipeline(`timeline --type deal_created ${dbFlag}`);
 		expect(dealsOnly).toContain("deal_created");
 	});
 
 	it("filters by last-days", () => {
-		runPipeline(
-			`contact:add "Jane Smith" --email jane@acme.co ${dbFlag}`,
-		);
+		runPipeline(`contact:add "Jane Smith" --email jane@acme.co ${dbFlag}`);
 		runPipeline(
 			`log:email jane --direction outbound --subject "Recent" --body "test" ${dbFlag}`,
 		);
@@ -70,15 +60,9 @@ describe("timeline command", () => {
 	});
 
 	it("sorts events newest first", () => {
-		runPipeline(
-			`contact:add "Jane Smith" --email jane@acme.co ${dbFlag}`,
-		);
-		runPipeline(
-			`deal:add "Deal A" --contact jane --value 1000 ${dbFlag}`,
-		);
-		runPipeline(
-			`deal:add "Deal B" --contact jane --value 2000 ${dbFlag}`,
-		);
+		runPipeline(`contact:add "Jane Smith" --email jane@acme.co ${dbFlag}`);
+		runPipeline(`deal:add "Deal A" --contact jane --value 1000 ${dbFlag}`);
+		runPipeline(`deal:add "Deal B" --contact jane --value 2000 ${dbFlag}`);
 		const output = runPipeline(`timeline --json ${dbFlag}`);
 		const events = JSON.parse(output);
 		expect(events.length).toBeGreaterThan(0);
@@ -89,9 +73,7 @@ describe("timeline command", () => {
 	});
 
 	it("returns valid JSON array", () => {
-		runPipeline(
-			`contact:add "Jane Smith" --email jane@acme.co ${dbFlag}`,
-		);
+		runPipeline(`contact:add "Jane Smith" --email jane@acme.co ${dbFlag}`);
 		runPipeline(
 			`log:email jane --direction outbound --subject "Hello" --body "Hi" ${dbFlag}`,
 		);

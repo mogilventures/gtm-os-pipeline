@@ -8,7 +8,10 @@ export default class DealNote extends BaseCommand {
 	static override description = "Add a note to a deal";
 
 	static override args = {
-		name: Args.string({ description: "Deal name (fuzzy match)", required: true }),
+		name: Args.string({
+			description: "Deal name (fuzzy match)",
+			required: true,
+		}),
 		body: Args.string({ description: "Note body", required: true }),
 	};
 
@@ -22,6 +25,8 @@ export default class DealNote extends BaseCommand {
 		const match = await fuzzyResolve(deals, args.name, "deal");
 
 		const interaction = addDealNote(db, match.id, args.body);
-		this.log(`Note added to deal "${match.name}" (interaction id: ${interaction.id})`);
+		this.log(
+			`Note added to deal "${match.name}" (interaction id: ${interaction.id})`,
+		);
 	}
 }

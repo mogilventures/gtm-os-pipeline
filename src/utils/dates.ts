@@ -47,7 +47,9 @@ export function parseDate(input: string): string {
 		return toISODate(addDays(now, Number.parseInt(shortDays[1], 10)));
 	}
 
-	throw new Error(`Cannot parse date: "${input}". Use YYYY-MM-DD, "tomorrow", "in 3 days", etc.`);
+	throw new Error(
+		`Cannot parse date: "${input}". Use YYYY-MM-DD, "tomorrow", "in 3 days", etc.`,
+	);
 }
 
 /**
@@ -56,7 +58,9 @@ export function parseDate(input: string): string {
 export function parseDays(input: string): number {
 	const match = input.trim().match(/^(\d+)d$/);
 	if (!match) {
-		throw new Error(`Cannot parse duration: "${input}". Use format like "30d".`);
+		throw new Error(
+			`Cannot parse duration: "${input}". Use format like "30d".`,
+		);
 	}
 	return Number.parseInt(match[1], 10);
 }

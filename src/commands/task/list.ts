@@ -20,7 +20,9 @@ export default class TaskList extends BaseCommand {
 		const { flags } = await this.parse(TaskList);
 		const db = getDb(flags.db);
 
-		const contactId = flags.contact ? (await resolveContactId(db, flags.contact)).id : undefined;
+		const contactId = flags.contact
+			? (await resolveContactId(db, flags.contact)).id
+			: undefined;
 		const dealId = flags.deal ? await resolveDealId(db, flags.deal) : undefined;
 
 		const tasks = listTasks(db, {

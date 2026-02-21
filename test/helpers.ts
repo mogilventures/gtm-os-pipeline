@@ -5,7 +5,10 @@ import { join } from "node:path";
 
 const BIN = join(import.meta.dirname, "..", "bin", "run.js");
 
-export function runPipeline(args: string, env?: Record<string, string>): string {
+export function runPipeline(
+	args: string,
+	env?: Record<string, string>,
+): string {
 	return execSync(`node ${BIN} ${args}`, {
 		cwd: join(import.meta.dirname, ".."),
 		encoding: "utf-8",

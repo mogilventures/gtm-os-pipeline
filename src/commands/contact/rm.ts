@@ -8,12 +8,18 @@ export default class ContactRm extends BaseCommand {
 	static override description = "Remove a contact";
 
 	static override args = {
-		name: Args.string({ description: "Contact name (fuzzy match)", required: true }),
+		name: Args.string({
+			description: "Contact name (fuzzy match)",
+			required: true,
+		}),
 	};
 
 	static override flags = {
 		...BaseCommand.baseFlags,
-		confirm: Flags.boolean({ description: "Skip confirmation prompt", default: false }),
+		confirm: Flags.boolean({
+			description: "Skip confirmation prompt",
+			default: false,
+		}),
 	};
 
 	async run(): Promise<void> {

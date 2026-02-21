@@ -1,5 +1,5 @@
-import Fuse from "fuse.js";
 import { select } from "@inquirer/prompts";
+import Fuse from "fuse.js";
 
 interface FuzzyItem {
 	id: number;
@@ -35,9 +35,7 @@ export async function fuzzyResolve<T extends FuzzyItem>(
 	keys: string[] = ["name"],
 ): Promise<T> {
 	// Try exact match first
-	const exact = items.find(
-		(i) => i.name.toLowerCase() === query.toLowerCase(),
-	);
+	const exact = items.find((i) => i.name.toLowerCase() === query.toLowerCase());
 	if (exact) return exact;
 
 	const results = fuzzySearch(items, query, keys);

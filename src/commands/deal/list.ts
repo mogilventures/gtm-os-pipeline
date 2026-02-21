@@ -12,7 +12,9 @@ export default class DealList extends BaseCommand {
 		...BaseCommand.baseFlags,
 		stage: Flags.string({ description: "Filter by stage" }),
 		priority: Flags.string({ description: "Filter by priority" }),
-		closing: Flags.string({ description: "Show deals closing within N days (e.g. 30d)" }),
+		closing: Flags.string({
+			description: "Show deals closing within N days (e.g. 30d)",
+		}),
 		value: Flags.integer({ description: "Minimum deal value" }),
 	};
 

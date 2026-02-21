@@ -1,8 +1,8 @@
-import { join } from "node:path";
 import { mkdirSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { getAgent, getBuiltinAgents } from "../../src/services/subagents.js";
 import { cleanupTmpDir, createTmpDir, runPipeline } from "../helpers.js";
-import { getBuiltinAgents, getAgent } from "../../src/services/subagents.js";
 
 describe("subagent definitions", () => {
 	it("has five builtin agents", () => {

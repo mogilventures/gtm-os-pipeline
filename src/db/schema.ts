@@ -149,6 +149,35 @@ export const customFields = sqliteTable(
 	],
 );
 
+// ── Schedules ──────────────────────────────────────────────────
+export const schedules = sqliteTable("schedules", {
+	id: integer("id").primaryKey({ autoIncrement: true }),
+	agent_name: text("agent_name").notNull().unique(),
+	interval: text("interval").notNull(), // hourly, daily, weekdays, weekly
+	enabled: integer("enabled", { mode: "boolean" }).notNull().default(true),
+	last_run_at: text("last_run_at"),
+	created_at: text("created_at")
+		.notNull()
+		.$defaultFn(() => new Date().toISOString()),
+});
+
+// ── Schedule Logs ──────────────────────────────────────────────
+export const scheduleLogs = sqliteTable("schedule_logs", {
+	id: integer("id").primaryKey({ autoIncrement: true }),
+	schedule_id: integer("schedule_id")
+		.notNull()
+		.references(() => schedules.id),
+	agent_name: text("agent_name").notNull(),
+	started_at: text("started_at").notNull(),
+	finished_at: text("finished_at"),
+	status: text("status").notNull().default("running"), // running, completed, failed
+	output: text("output"),
+	actions_proposed: integer("actions_proposed").default(0),
+	created_at: text("created_at")
+		.notNull()
+		.$defaultFn(() => new Date().toISOString()),
+});
+
 // ── Edges (relationship graph) ──────────────────────────────────
 export const edges = sqliteTable(
 	"edges",

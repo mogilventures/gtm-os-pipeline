@@ -11,7 +11,10 @@ export function listPendingActions(db: PipelineDB) {
 		.all();
 }
 
-export async function approveAction(db: PipelineDB, actionId: number): Promise<string> {
+export async function approveAction(
+	db: PipelineDB,
+	actionId: number,
+): Promise<string> {
 	const action = db
 		.select()
 		.from(schema.pendingActions)
@@ -19,7 +22,8 @@ export async function approveAction(db: PipelineDB, actionId: number): Promise<s
 		.get();
 
 	if (!action) throw new Error(`Action ${actionId} not found`);
-	if (action.status !== "pending") throw new Error(`Action ${actionId} is already ${action.status}`);
+	if (action.status !== "pending")
+		throw new Error(`Action ${actionId} is already ${action.status}`);
 
 	const payload = (action.payload || {}) as Record<string, unknown>;
 	let result = "";

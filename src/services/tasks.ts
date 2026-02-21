@@ -43,10 +43,7 @@ export function listTasks(
 			created_at: schema.tasks.created_at,
 		})
 		.from(schema.tasks)
-		.leftJoin(
-			schema.contacts,
-			eq(schema.tasks.contact_id, schema.contacts.id),
-		)
+		.leftJoin(schema.contacts, eq(schema.tasks.contact_id, schema.contacts.id))
 		.leftJoin(schema.people, eq(schema.contacts.person_id, schema.people.id))
 		.leftJoin(schema.deals, eq(schema.tasks.deal_id, schema.deals.id))
 		.all();

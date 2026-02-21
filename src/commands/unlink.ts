@@ -12,7 +12,10 @@ export default class Unlink extends BaseCommand {
 
 	static override flags = {
 		...BaseCommand.baseFlags,
-		relation: Flags.string({ description: "Relation type to remove", required: true }),
+		relation: Flags.string({
+			description: "Relation type to remove",
+			required: true,
+		}),
 		target: Flags.string({ description: "Target entity name", required: true }),
 	};
 

@@ -2,7 +2,10 @@ import { Args } from "@oclif/core";
 import { BaseCommand } from "../../base-command.js";
 import { getDb } from "../../db/index.js";
 import { getFields } from "../../services/custom-fields.js";
-import { getOrgsForFuzzy, showOrganization } from "../../services/organizations.js";
+import {
+	getOrgsForFuzzy,
+	showOrganization,
+} from "../../services/organizations.js";
 import { fuzzyResolve } from "../../utils/fuzzy.js";
 import { formatJson } from "../../utils/output.js";
 
@@ -10,7 +13,10 @@ export default class OrgShow extends BaseCommand {
 	static override description = "Show organization details";
 
 	static override args = {
-		name: Args.string({ description: "Organization name (fuzzy match)", required: true }),
+		name: Args.string({
+			description: "Organization name (fuzzy match)",
+			required: true,
+		}),
 	};
 
 	static override flags = { ...BaseCommand.baseFlags };
@@ -39,7 +45,8 @@ export default class OrgShow extends BaseCommand {
 		if (detail.industry) this.log(`  Industry: ${detail.industry}`);
 		if (detail.size) this.log(`  Size:     ${detail.size}`);
 		if (detail.location) this.log(`  Location: ${detail.location}`);
-		if (detail.tags.length > 0) this.log(`  Tags:     ${detail.tags.join(", ")}`);
+		if (detail.tags.length > 0)
+			this.log(`  Tags:     ${detail.tags.join(", ")}`);
 
 		if (detail.contacts.length > 0) {
 			this.log(`\n  Contacts (${detail.contacts.length}):`);

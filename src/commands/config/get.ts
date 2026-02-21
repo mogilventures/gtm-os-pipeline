@@ -11,7 +11,10 @@ export default class ConfigGet extends BaseCommand {
 	];
 
 	static override args = {
-		key: Args.string({ description: "Config key (dot-notation)", required: true }),
+		key: Args.string({
+			description: "Config key (dot-notation)",
+			required: true,
+		}),
 	};
 
 	async run(): Promise<void> {
@@ -21,7 +24,9 @@ export default class ConfigGet extends BaseCommand {
 		if (value === undefined) {
 			this.log(`Key "${args.key}" not found`);
 		} else {
-			this.log(typeof value === "object" ? JSON.stringify(value) : String(value));
+			this.log(
+				typeof value === "object" ? JSON.stringify(value) : String(value),
+			);
 		}
 	}
 }

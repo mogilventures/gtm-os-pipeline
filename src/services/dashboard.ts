@@ -38,7 +38,9 @@ export function getDashboard(db: PipelineDB): DashboardData {
 	let pipelineValue = 0;
 
 	for (const [stage, deals] of Object.entries(grouped)) {
-		const openDeals = deals.filter((d) => d.won === null || d.won === undefined);
+		const openDeals = deals.filter(
+			(d) => d.won === null || d.won === undefined,
+		);
 		if (openDeals.length === 0) continue;
 		const stageValue = openDeals.reduce((sum, d) => sum + (d.value || 0), 0);
 		dealsByStage[stage] = { count: openDeals.length, value: stageValue };

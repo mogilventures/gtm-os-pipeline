@@ -8,7 +8,10 @@ export default class TaskDone extends BaseCommand {
 	static override description = "Mark a task as done";
 
 	static override args = {
-		name: Args.string({ description: "Task name or index (fuzzy match)", required: true }),
+		name: Args.string({
+			description: "Task name or index (fuzzy match)",
+			required: true,
+		}),
 	};
 
 	static override flags = { ...BaseCommand.baseFlags };

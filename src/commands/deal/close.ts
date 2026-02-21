@@ -8,7 +8,10 @@ export default class DealClose extends BaseCommand {
 	static override description = "Close a deal as won or lost";
 
 	static override args = {
-		name: Args.string({ description: "Deal name (fuzzy match)", required: true }),
+		name: Args.string({
+			description: "Deal name (fuzzy match)",
+			required: true,
+		}),
 	};
 
 	static override flags = {

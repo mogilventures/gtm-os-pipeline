@@ -22,13 +22,34 @@ export default class Status extends BaseCommand {
 		const db = getDb(flags.db);
 
 		const counts = {
-			contacts: db.select({ count: sql<number>`count(*)` }).from(schema.contacts).get()!.count,
-			organizations: db.select({ count: sql<number>`count(*)` }).from(schema.organizations).get()!.count,
-			deals: db.select({ count: sql<number>`count(*)` }).from(schema.deals).get()!.count,
-			interactions: db.select({ count: sql<number>`count(*)` }).from(schema.interactions).get()!.count,
-			tasks: db.select({ count: sql<number>`count(*)` }).from(schema.tasks).get()!.count,
-			pending_actions: db.select({ count: sql<number>`count(*)` }).from(schema.pendingActions).get()!.count,
-			edges: db.select({ count: sql<number>`count(*)` }).from(schema.edges).get()!.count,
+			contacts: db
+				.select({ count: sql<number>`count(*)` })
+				.from(schema.contacts)
+				.get()!.count,
+			organizations: db
+				.select({ count: sql<number>`count(*)` })
+				.from(schema.organizations)
+				.get()!.count,
+			deals: db
+				.select({ count: sql<number>`count(*)` })
+				.from(schema.deals)
+				.get()!.count,
+			interactions: db
+				.select({ count: sql<number>`count(*)` })
+				.from(schema.interactions)
+				.get()!.count,
+			tasks: db
+				.select({ count: sql<number>`count(*)` })
+				.from(schema.tasks)
+				.get()!.count,
+			pending_actions: db
+				.select({ count: sql<number>`count(*)` })
+				.from(schema.pendingActions)
+				.get()!.count,
+			edges: db
+				.select({ count: sql<number>`count(*)` })
+				.from(schema.edges)
+				.get()!.count,
 		};
 
 		this.log("Pipeline CRM Status");

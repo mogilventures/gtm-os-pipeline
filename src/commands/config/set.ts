@@ -11,7 +11,10 @@ export default class ConfigSet extends BaseCommand {
 	];
 
 	static override args = {
-		key: Args.string({ description: "Config key (dot-notation)", required: true }),
+		key: Args.string({
+			description: "Config key (dot-notation)",
+			required: true,
+		}),
 		value: Args.string({ description: "Value to set", required: true }),
 	};
 

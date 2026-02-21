@@ -1,7 +1,10 @@
 import { Args } from "@oclif/core";
 import { BaseCommand } from "../../base-command.js";
 import { getDb } from "../../db/index.js";
-import { getOrgContacts, getOrgsForFuzzy } from "../../services/organizations.js";
+import {
+	getOrgContacts,
+	getOrgsForFuzzy,
+} from "../../services/organizations.js";
 import { fuzzyResolve } from "../../utils/fuzzy.js";
 import { formatJson, formatTable } from "../../utils/output.js";
 
@@ -9,7 +12,10 @@ export default class OrgContacts extends BaseCommand {
 	static override description = "List contacts at an organization";
 
 	static override args = {
-		name: Args.string({ description: "Organization name (fuzzy match)", required: true }),
+		name: Args.string({
+			description: "Organization name (fuzzy match)",
+			required: true,
+		}),
 	};
 
 	static override flags = { ...BaseCommand.baseFlags };

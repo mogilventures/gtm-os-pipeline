@@ -12,7 +12,10 @@ export default class ContactNote extends BaseCommand {
 	];
 
 	static override args = {
-		name: Args.string({ description: "Contact name (fuzzy match)", required: true }),
+		name: Args.string({
+			description: "Contact name (fuzzy match)",
+			required: true,
+		}),
 		body: Args.string({ description: "Note body", required: true }),
 	};
 
@@ -27,6 +30,8 @@ export default class ContactNote extends BaseCommand {
 		const match = await resolveContactId(db, args.name);
 
 		const interaction = addNote(db, match.id, args.body);
-		this.log(`Note added for ${match.name} (interaction id: ${interaction.id})`);
+		this.log(
+			`Note added for ${match.name} (interaction id: ${interaction.id})`,
+		);
 	}
 }

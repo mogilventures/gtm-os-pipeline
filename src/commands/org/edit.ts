@@ -1,14 +1,20 @@
 import { Args, Flags } from "@oclif/core";
 import { BaseCommand } from "../../base-command.js";
 import { getDb } from "../../db/index.js";
-import { editOrganization, getOrgsForFuzzy } from "../../services/organizations.js";
+import {
+	editOrganization,
+	getOrgsForFuzzy,
+} from "../../services/organizations.js";
 import { fuzzyResolve } from "../../utils/fuzzy.js";
 
 export default class OrgEdit extends BaseCommand {
 	static override description = "Edit an organization";
 
 	static override args = {
-		name: Args.string({ description: "Organization name (fuzzy match)", required: true }),
+		name: Args.string({
+			description: "Organization name (fuzzy match)",
+			required: true,
+		}),
 	};
 
 	static override flags = {

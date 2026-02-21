@@ -24,9 +24,7 @@ describe("dashboard command", () => {
 	});
 
 	it("shows deal stage breakdown after adding deals", () => {
-		runPipeline(
-			`contact:add "Jane Smith" --email jane@acme.co ${dbFlag}`,
-		);
+		runPipeline(`contact:add "Jane Smith" --email jane@acme.co ${dbFlag}`);
 		runPipeline(
 			`deal:add "Acme Deal" --contact jane --value 15000 --stage lead ${dbFlag}`,
 		);
@@ -41,9 +39,7 @@ describe("dashboard command", () => {
 	});
 
 	it("shows overdue tasks", () => {
-		runPipeline(
-			`contact:add "Jane Smith" --email jane@acme.co ${dbFlag}`,
-		);
+		runPipeline(`contact:add "Jane Smith" --email jane@acme.co ${dbFlag}`);
 		runPipeline(
 			`task:add "Follow up" --contact jane --due 2020-01-01 ${dbFlag}`,
 		);
@@ -53,9 +49,7 @@ describe("dashboard command", () => {
 	});
 
 	it("shows stale contacts", () => {
-		runPipeline(
-			`contact:add "Old Contact" --email old@test.co ${dbFlag}`,
-		);
+		runPipeline(`contact:add "Old Contact" --email old@test.co ${dbFlag}`);
 		// Contact was just added, so updated_at is now - won't be stale
 		// We need to verify the section renders when stale
 		const output = runPipeline(`dashboard ${dbFlag}`);
@@ -76,9 +70,7 @@ describe("dashboard command", () => {
 	});
 
 	it("returns valid JSON output", () => {
-		runPipeline(
-			`deal:add "Test Deal" --value 5000 --stage lead ${dbFlag}`,
-		);
+		runPipeline(`deal:add "Test Deal" --value 5000 --stage lead ${dbFlag}`);
 		const output = runPipeline(`dashboard --json ${dbFlag}`);
 		const data = JSON.parse(output);
 		expect(data).toHaveProperty("pipelineValue");

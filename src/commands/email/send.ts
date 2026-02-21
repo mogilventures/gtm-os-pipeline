@@ -1,9 +1,9 @@
 import { Args, Flags } from "@oclif/core";
 import { BaseCommand } from "../../base-command.js";
 import { getDb } from "../../db/index.js";
+import { getContactsForFuzzy } from "../../services/contacts.js";
 import { sendEmail } from "../../services/email.js";
 import { logInteraction } from "../../services/interactions.js";
-import { getContactsForFuzzy } from "../../services/contacts.js";
 import { fuzzyResolve } from "../../utils/fuzzy.js";
 
 export default class EmailSend extends BaseCommand {
@@ -61,7 +61,9 @@ export default class EmailSend extends BaseCommand {
 			messageId: result.id,
 		});
 
-		this.log(`Email sent to ${match.name} <${match.email}> via ${result.provider}`);
+		this.log(
+			`Email sent to ${match.name} <${match.email}> via ${result.provider}`,
+		);
 		this.log(`Subject: ${flags.subject}`);
 
 		if (flags.json) {

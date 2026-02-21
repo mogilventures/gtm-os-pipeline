@@ -12,7 +12,10 @@ export default class LogList extends BaseCommand {
 	static override flags = {
 		...BaseCommand.baseFlags,
 		contact: Flags.string({ description: "Filter by contact (fuzzy match)" }),
-		type: Flags.string({ description: "Filter by type", options: ["email", "call", "meeting", "note"] }),
+		type: Flags.string({
+			description: "Filter by type",
+			options: ["email", "call", "meeting", "note"],
+		}),
 		last: Flags.string({ description: "Show last N days (e.g. 30d)" }),
 		deal: Flags.string({ description: "Filter by deal (fuzzy match)" }),
 	};
@@ -21,7 +24,9 @@ export default class LogList extends BaseCommand {
 		const { flags } = await this.parse(LogList);
 		const db = getDb(flags.db);
 
-		const contactId = flags.contact ? (await resolveContactId(db, flags.contact)).id : undefined;
+		const contactId = flags.contact
+			? (await resolveContactId(db, flags.contact)).id
+			: undefined;
 		const dealId = flags.deal ? await resolveDealId(db, flags.deal) : undefined;
 
 		const interactions = listInteractions(db, {

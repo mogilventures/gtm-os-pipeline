@@ -35,11 +35,7 @@ export function logInteraction(db: PipelineDB, input: LogInteractionInput) {
 		values.occurred_at = input.occurredAt;
 	}
 
-	return db
-		.insert(schema.interactions)
-		.values(values)
-		.returning()
-		.get();
+	return db.insert(schema.interactions).values(values).returning().get();
 }
 
 export function listInteractions(
@@ -74,30 +70,28 @@ export function listInteractions(
 		.all();
 
 	if (filters?.contactId) {
-		rows = rows.filter(
-			(r) =>
-				db
-					.select()
-					.from(schema.interactions)
-					.where(eq(schema.interactions.contact_id, filters.contactId!))
-					.all()
-					.map((i) => i.id)
-					.includes(r.id),
+		rows = rows.filter((r) =>
+			db
+				.select()
+				.from(schema.interactions)
+				.where(eq(schema.interactions.contact_id, filters.contactId!))
+				.all()
+				.map((i) => i.id)
+				.includes(r.id),
 		);
 	}
 	if (filters?.type) {
 		rows = rows.filter((r) => r.type === filters.type);
 	}
 	if (filters?.dealId) {
-		rows = rows.filter(
-			(r) =>
-				db
-					.select()
-					.from(schema.interactions)
-					.where(eq(schema.interactions.deal_id, filters.dealId!))
-					.all()
-					.map((i) => i.id)
-					.includes(r.id),
+		rows = rows.filter((r) =>
+			db
+				.select()
+				.from(schema.interactions)
+				.where(eq(schema.interactions.deal_id, filters.dealId!))
+				.all()
+				.map((i) => i.id)
+				.includes(r.id),
 		);
 	}
 	if (filters?.lastDays) {

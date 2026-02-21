@@ -8,7 +8,10 @@ export default class LogMeeting extends BaseCommand {
 	static override description = "Log a meeting interaction";
 
 	static override args = {
-		contact: Args.string({ description: "Contact name (fuzzy match)", required: true }),
+		contact: Args.string({
+			description: "Contact name (fuzzy match)",
+			required: true,
+		}),
 	};
 
 	static override flags = {

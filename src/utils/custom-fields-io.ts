@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import type { PipelineDB } from "../db/index.js";
 import { schema } from "../db/index.js";
-import { setField, getFields } from "../services/custom-fields.js";
+import { getFields, setField } from "../services/custom-fields.js";
 import type { EntityType } from "./import-handlers.js";
 
 export const CF_PREFIX = "cf:";

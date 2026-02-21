@@ -2,9 +2,9 @@ import { eq } from "drizzle-orm";
 import type { PipelineDB } from "../db/index.js";
 import { schema } from "../db/index.js";
 import { listContacts } from "../services/contacts.js";
-import { listOrganizations } from "../services/organizations.js";
 import { listDeals } from "../services/deals.js";
 import { listInteractions } from "../services/interactions.js";
+import { listOrganizations } from "../services/organizations.js";
 import type { EntityType } from "./import-handlers.js";
 
 // biome-ignore lint/suspicious/noExplicitAny: rows come from various service functions with different shapes

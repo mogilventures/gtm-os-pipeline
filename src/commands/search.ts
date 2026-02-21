@@ -5,12 +5,13 @@ import { searchAll } from "../services/search.js";
 import { formatJson, formatTable } from "../utils/output.js";
 
 export default class Search extends BaseCommand {
-	static override description = "Search across contacts, deals, organizations, and tasks";
+	static override description =
+		"Search across contacts, deals, organizations, and tasks";
 
 	static override examples = [
-		'<%= config.bin %> search jane',
-		'<%= config.bin %> search acme --type organization',
-		'<%= config.bin %> search proposal --type deal --json',
+		"<%= config.bin %> search jane",
+		"<%= config.bin %> search acme --type organization",
+		"<%= config.bin %> search proposal --type deal --json",
 	];
 
 	static override args = {
@@ -59,6 +60,8 @@ export default class Search extends BaseCommand {
 				results.map((r) => [r.type, r.id, r.name, r.detail ?? ""]),
 			),
 		);
-		this.log(`\n${results.length} result${results.length === 1 ? "" : "s"} found`);
+		this.log(
+			`\n${results.length} result${results.length === 1 ? "" : "s"} found`,
+		);
 	}
 }

@@ -71,7 +71,8 @@ export default class EmailThread extends BaseCommand {
 			this.log(`\n${arrow}  ${date}`);
 			this.log(`  Subject: ${subject}`);
 			if (row.body) {
-				const preview = row.body.length > 200 ? `${row.body.slice(0, 200)}...` : row.body;
+				const preview =
+					row.body.length > 200 ? `${row.body.slice(0, 200)}...` : row.body;
 				this.log(`  ${preview}`);
 			}
 		}
