@@ -11,6 +11,7 @@ interface LogInteractionInput {
 	dealId?: number;
 	messageId?: string;
 	fromAddress?: string;
+	occurredAt?: string;
 }
 
 export function logInteraction(db: PipelineDB, input: LogInteractionInput) {
@@ -20,18 +21,23 @@ export function logInteraction(db: PipelineDB, input: LogInteractionInput) {
 		.where(eq(schema.contacts.id, input.contactId))
 		.run();
 
+	const values: typeof schema.interactions.$inferInsert = {
+		contact_id: input.contactId,
+		deal_id: input.dealId,
+		type: input.type,
+		direction: input.direction,
+		subject: input.subject,
+		body: input.body,
+		message_id: input.messageId,
+		from_address: input.fromAddress,
+	};
+	if (input.occurredAt) {
+		values.occurred_at = input.occurredAt;
+	}
+
 	return db
 		.insert(schema.interactions)
-		.values({
-			contact_id: input.contactId,
-			deal_id: input.dealId,
-			type: input.type,
-			direction: input.direction,
-			subject: input.subject,
-			body: input.body,
-			message_id: input.messageId,
-			from_address: input.fromAddress,
-		})
+		.values(values)
 		.returning()
 		.get();
 }

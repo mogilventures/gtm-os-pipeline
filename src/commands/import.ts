@@ -3,45 +3,22 @@ import { readFileSync } from "node:fs";
 import { parse } from "csv-parse/sync";
 import { BaseCommand } from "../base-command.js";
 import { getDb } from "../db/index.js";
-import { addContact } from "../services/contacts.js";
-
-// Common column name mappings
-const COLUMN_MAP: Record<string, string> = {
-	"full name": "name",
-	"first name": "first_name",
-	"last name": "last_name",
-	"first": "first_name",
-	"last": "last_name",
-	"email": "email",
-	"email address": "email",
-	"e-mail": "email",
-	"phone": "phone",
-	"phone number": "phone",
-	"company": "org",
-	"organization": "org",
-	"organisation": "org",
-	"company name": "org",
-	"role": "role",
-	"title": "role",
-	"job title": "role",
-	"position": "role",
-	"source": "source",
-	"tags": "tags",
-	"tag": "tags",
-	"linkedin": "linkedin",
-	"linkedin url": "linkedin",
-};
-
-function normalizeColumn(col: string): string {
-	const lower = col.toLowerCase().trim();
-	return COLUMN_MAP[lower] || lower;
-}
+import {
+	type EntityType,
+	getImportHandler,
+	getMappedValue,
+	normalizeColumn,
+} from "../utils/import-handlers.js";
+import { stripBom } from "../utils/validation.js";
+import { importCustomFields } from "../utils/custom-fields-io.js";
 
 export default class Import extends BaseCommand {
-	static override description = "Import contacts from a CSV file";
+	static override description = "Import records from a CSV file";
 
 	static override examples = [
 		"<%= config.bin %> import contacts.csv",
+		"<%= config.bin %> import orgs.csv --type organizations",
+		"<%= config.bin %> import deals.csv --type deals",
 	];
 
 	static override args = {
@@ -50,17 +27,26 @@ export default class Import extends BaseCommand {
 
 	static override flags = {
 		...BaseCommand.baseFlags,
+		type: Flags.string({
+			description: "Entity type to import",
+			options: ["contacts", "organizations", "deals", "interactions", "tasks"],
+			default: "contacts",
+		}),
 	};
 
 	async run(): Promise<void> {
 		const { args, flags } = await this.parse(Import);
 		const db = getDb(flags.db);
+		const entityType = flags.type as EntityType;
+		const handler = getImportHandler(entityType);
 
-		const content = readFileSync(args.file, "utf-8");
+		const rawContent = readFileSync(args.file, "utf-8");
+		const content = stripBom(rawContent);
 		const records = parse(content, {
 			columns: true,
 			skip_empty_lines: true,
 			trim: true,
+			relax_column_count: true,
 		}) as Record<string, string>[];
 
 		if (records.length === 0) {
@@ -72,66 +58,43 @@ export default class Import extends BaseCommand {
 		const rawColumns = Object.keys(records[0]);
 		const columnMapping: Record<string, string> = {};
 		for (const col of rawColumns) {
-			columnMapping[col] = normalizeColumn(col);
+			columnMapping[col] = normalizeColumn(col, handler.columnMap);
 		}
 
 		// Preview
-		this.log(`Found ${records.length} records with columns: ${rawColumns.join(", ")}`);
+		this.log(
+			`Found ${records.length} records with columns: ${rawColumns.join(", ")}`,
+		);
 		this.log(`Column mapping: ${JSON.stringify(columnMapping, null, 2)}`);
 		this.log("\nPreview (first 5 rows):");
 		for (const row of records.slice(0, 5)) {
-			const name = getMappedValue(row, columnMapping, "name")
-				|| `${getMappedValue(row, columnMapping, "first_name") || ""} ${getMappedValue(row, columnMapping, "last_name") || ""}`.trim();
-			const email = getMappedValue(row, columnMapping, "email");
-			this.log(`  ${name || "(no name)"} <${email || "no email"}>`);
+			this.log(`  ${handler.previewRow(row, columnMapping)}`);
 		}
 
 		// Import
 		let imported = 0;
 		let skipped = 0;
+		const errors: string[] = [];
 
-		for (const row of records) {
-			const name = getMappedValue(row, columnMapping, "name")
-				|| `${getMappedValue(row, columnMapping, "first_name") || ""} ${getMappedValue(row, columnMapping, "last_name") || ""}`.trim();
-
-			if (!name) {
-				skipped++;
-				continue;
-			}
-
+		for (let i = 0; i < records.length; i++) {
+			const row = records[i];
 			try {
-				addContact(db, {
-					name,
-					email: getMappedValue(row, columnMapping, "email") || undefined,
-					phone: getMappedValue(row, columnMapping, "phone") || undefined,
-					linkedin: getMappedValue(row, columnMapping, "linkedin") || undefined,
-					org: getMappedValue(row, columnMapping, "org") || undefined,
-					role: getMappedValue(row, columnMapping, "role") || undefined,
-					source: getMappedValue(row, columnMapping, "source") || undefined,
-					tags: getMappedValue(row, columnMapping, "tags")?.split(",").map((t) => t.trim()).filter(Boolean),
-				});
+				const entityId = handler.importRow(db, row, columnMapping);
+				importCustomFields(db, entityType, entityId, row, columnMapping);
 				imported++;
 			} catch (error) {
 				skipped++;
+				const msg = `Row ${i + 2}: ${error instanceof Error ? error.message : String(error)}`;
+				errors.push(msg);
 				if (flags.verbose) {
-					this.log(`  Skipped "${name}": ${error instanceof Error ? error.message : String(error)}`);
+					this.log(`  Skipped: ${msg}`);
 				}
 			}
 		}
 
 		this.log(`\nImported: ${imported}, Skipped: ${skipped}`);
-	}
-}
-
-function getMappedValue(
-	row: Record<string, string>,
-	mapping: Record<string, string>,
-	targetField: string,
-): string | null {
-	for (const [rawCol, mappedCol] of Object.entries(mapping)) {
-		if (mappedCol === targetField && row[rawCol]) {
-			return row[rawCol];
+		if (errors.length > 0 && !flags.verbose) {
+			this.log(`Use -v to see ${errors.length} error(s)`);
 		}
 	}
-	return null;
 }

@@ -2,14 +2,21 @@ import { Flags } from "@oclif/core";
 import { stringify } from "csv-stringify/sync";
 import { BaseCommand } from "../base-command.js";
 import { getDb } from "../db/index.js";
-import { listContacts } from "../services/contacts.js";
+import type { EntityType } from "../utils/import-handlers.js";
+import { getExportHandler } from "../utils/export-handlers.js";
+import {
+	getAllCustomFieldNames,
+	getCustomFieldColumns,
+	CF_PREFIX,
+} from "../utils/custom-fields-io.js";
 
 export default class Export extends BaseCommand {
-	static override description = "Export contacts as CSV or JSON";
+	static override description = "Export records as CSV or JSON";
 
 	static override examples = [
 		"<%= config.bin %> export --format csv > contacts.csv",
 		"<%= config.bin %> export --format json | jq",
+		"<%= config.bin %> export --type deals --format csv > deals.csv",
 	];
 
 	static override flags = {
@@ -19,34 +26,53 @@ export default class Export extends BaseCommand {
 			options: ["csv", "json"],
 			default: "json",
 		}),
+		type: Flags.string({
+			description: "Entity type to export",
+			options: ["contacts", "organizations", "deals", "interactions", "tasks"],
+			default: "contacts",
+		}),
 	};
 
 	async run(): Promise<void> {
 		const { flags } = await this.parse(Export);
 		const db = getDb(flags.db);
+		const entityType = flags.type as EntityType;
+		const handler = getExportHandler(entityType);
 
-		const contacts = listContacts(db);
+		const rows = handler.fetchRows(db);
+		const cfNames = getAllCustomFieldNames(db, entityType);
 
 		if (flags.format === "json") {
-			this.log(JSON.stringify(contacts, null, 2));
+			const jsonRows = rows.map((r) => {
+				const base = { ...r };
+				if (cfNames.length > 0) {
+					const cfValues = getCustomFieldColumns(db, entityType, r.id);
+					const customFields: Record<string, string> = {};
+					for (const name of cfNames) {
+						const key = `${CF_PREFIX}${name}`;
+						customFields[key] = cfValues[key] || "";
+					}
+					base.custom_fields = customFields;
+				}
+				return base;
+			});
+			this.log(JSON.stringify(jsonRows, null, 2));
 			return;
 		}
 
 		// CSV
-		const rows = contacts.map((c) => ({
-			id: c.id,
-			name: c.name,
-			email: c.email || "",
-			phone: c.phone || "",
-			organization: c.org_name || "",
-			role: c.role || "",
-			warmth: c.warmth || "",
-			source: c.source || "",
-			tags: c.tags.join(", "),
-			created_at: c.created_at,
-		}));
-
-		const csv = stringify(rows, { header: true });
+		const csvRows = rows.map((r) => {
+			const base = handler.toCsvRow(r);
+			if (cfNames.length > 0) {
+				const cfValues = getCustomFieldColumns(db, entityType, r.id);
+				for (const name of cfNames) {
+					const key = `${CF_PREFIX}${name}`;
+					base[key] = cfValues[key] || "";
+				}
+			}
+			return base;
+		});
+		const csv = stringify(csvRows, { header: true });
 		this.log(csv.trimEnd());
 	}
 }
