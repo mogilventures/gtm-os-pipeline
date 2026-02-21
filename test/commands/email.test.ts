@@ -96,8 +96,8 @@ describe("email commands", () => {
 		expect(output).toContain("No email history");
 	});
 
-	it("email:check --help shows description", () => {
-		const output = runPipeline("email:check --help");
+	it("email:sync --help shows description", () => {
+		const output = runPipeline("email:sync --help");
 		expect(output).toContain("Sync inbound emails from Resend");
 	});
 
@@ -111,10 +111,12 @@ describe("email commands", () => {
 		).run();
 
 		expect(() =>
-			db.prepare(
-				`INSERT INTO interactions (contact_id, type, direction, subject, message_id, occurred_at, created_at)
+			db
+				.prepare(
+					`INSERT INTO interactions (contact_id, type, direction, subject, message_id, occurred_at, created_at)
 				 VALUES (1, 'email', 'inbound', 'Duplicate', 'msg_dup', datetime('now'), datetime('now'))`,
-			).run(),
+				)
+				.run(),
 		).toThrow();
 
 		db.close();

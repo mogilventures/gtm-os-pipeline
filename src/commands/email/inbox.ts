@@ -1,6 +1,6 @@
 import { Flags } from "@oclif/core";
-import Table from "cli-table3";
 import chalk from "chalk";
+import Table from "cli-table3";
 import { BaseCommand } from "../../base-command.js";
 import { getDb } from "../../db/index.js";
 import { listInteractions } from "../../services/interactions.js";
@@ -40,7 +40,7 @@ export default class EmailInbox extends BaseCommand {
 			.slice(0, flags.limit);
 
 		if (limited.length === 0) {
-			this.log("No inbound emails. Run `pipeline email:check` to sync.");
+			this.log("No inbound emails. Run `pipeline email:sync` to sync.");
 			return;
 		}
 
