@@ -21,6 +21,7 @@ export default class AgentDigest extends BaseCommand {
 			dbPath: flags.db,
 			model: flags.model,
 			verbose: flags.verbose,
+			agentName: "digest",
 			onText: (text) => this.log(text),
 		});
 	}

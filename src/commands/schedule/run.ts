@@ -1,6 +1,7 @@
 import { Flags } from "@oclif/core";
 import { BaseCommand } from "../../base-command.js";
 import { getDb, getDbPath } from "../../db/index.js";
+import { processEvents, scanForTimeEvents } from "../../services/events.js";
 import { runDueSchedules } from "../../services/schedule.js";
 
 export default class ScheduleRun extends BaseCommand {
@@ -11,6 +12,11 @@ export default class ScheduleRun extends BaseCommand {
 		...BaseCommand.baseFlags,
 		agent: Flags.string({
 			description: "Force-run a specific agent regardless of schedule timing",
+		}),
+		hooks: Flags.boolean({
+			description: "Also process event hooks after running schedules",
+			default: true,
+			allowNo: true,
 		}),
 	};
 
@@ -31,16 +37,26 @@ export default class ScheduleRun extends BaseCommand {
 
 		if (results.length === 0) {
 			this.log("No agents due to run.");
-			return;
+		} else {
+			for (const r of results) {
+				const icon = r.status === "completed" ? "OK" : "FAIL";
+				this.log(
+					`[${icon}] ${r.agentName}: ${r.actionsProposed} action(s) proposed`,
+				);
+				if (flags.verbose && r.output) {
+					this.log(r.output);
+				}
+			}
 		}
 
-		for (const r of results) {
-			const icon = r.status === "completed" ? "OK" : "FAIL";
-			this.log(
-				`[${icon}] ${r.agentName}: ${r.actionsProposed} action(s) proposed`,
-			);
-			if (flags.verbose && r.output) {
-				this.log(r.output);
+		// Process event hooks if enabled
+		if (flags.hooks) {
+			scanForTimeEvents(db);
+			const hookResults = processEvents(db);
+			if (hookResults.length > 0 && flags.verbose) {
+				for (const hr of hookResults) {
+					this.log(`[HOOK] ${hr.eventType} → ${hr.agentName} (${hr.status})`);
+				}
 			}
 		}
 	}

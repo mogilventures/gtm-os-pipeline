@@ -3,30 +3,27 @@ import { BaseCommand } from "../../base-command.js";
 import { runAgent } from "../../services/agent-runner.js";
 import { getAgent } from "../../services/subagents.js";
 
-export default class AgentFollowUp extends BaseCommand {
+export default class AgentTaskAutomator extends BaseCommand {
 	static override description =
-		"Check stale contacts and propose follow-up emails";
+		"Ensure every active deal has appropriate tasks and flag overdue items";
 
 	static override flags = {
 		...BaseCommand.baseFlags,
-		days: Flags.integer({
-			description: "Days since last contact",
-			default: 14,
-		}),
 		model: Flags.string({ description: "Model to use" }),
 	};
 
 	async run(): Promise<void> {
-		const { flags } = await this.parse(AgentFollowUp);
-		const agent = getAgent("follow-up")!;
+		const { flags } = await this.parse(AgentTaskAutomator);
+		const agent = getAgent("task-automator")!;
 
 		await runAgent({
-			prompt: `Check contacts stale for ${flags.days} days and propose follow-ups.`,
+			prompt:
+				"Check all active deals for missing tasks. Flag overdue tasks. Propose new tasks where needed.",
 			systemPrompt: agent.prompt,
 			dbPath: flags.db,
 			model: flags.model,
 			verbose: flags.verbose,
-			agentName: "follow-up",
+			agentName: "task-automator",
 			onText: (text) => this.log(text),
 		});
 	}

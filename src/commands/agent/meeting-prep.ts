@@ -3,12 +3,13 @@ import { BaseCommand } from "../../base-command.js";
 import { runAgent } from "../../services/agent-runner.js";
 import { getAgent } from "../../services/subagents.js";
 
-export default class AgentEnrich extends BaseCommand {
-	static override description = "Research a contact and update their records";
+export default class AgentMeetingPrep extends BaseCommand {
+	static override description =
+		"Prepare a briefing for an upcoming meeting with a contact";
 
 	static override args = {
 		contact: Args.string({
-			description: "Contact name to enrich",
+			description: "Contact name to prepare for",
 			required: true,
 		}),
 	};
@@ -19,16 +20,16 @@ export default class AgentEnrich extends BaseCommand {
 	};
 
 	async run(): Promise<void> {
-		const { args, flags } = await this.parse(AgentEnrich);
-		const agent = getAgent("enrich")!;
+		const { args, flags } = await this.parse(AgentMeetingPrep);
+		const agent = getAgent("meeting-prep")!;
 
 		await runAgent({
-			prompt: `Enrich the contact "${args.contact}" — look up their information and update records.`,
+			prompt: `Prepare a meeting briefing for "${args.contact}". Compile all relevant context about this contact.`,
 			systemPrompt: agent.prompt,
 			dbPath: flags.db,
 			model: flags.model,
 			verbose: flags.verbose,
-			agentName: "enrich",
+			agentName: "meeting-prep",
 			onText: (text) => this.log(text),
 		});
 	}

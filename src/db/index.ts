@@ -201,4 +201,77 @@ function runMigrations(db: Database.Database): void {
 	db.exec(
 		"CREATE UNIQUE INDEX IF NOT EXISTS idx_interactions_message_id ON interactions(message_id) WHERE message_id IS NOT NULL",
 	);
+
+	// Add agent tracking columns to pending_actions
+	for (const col of ["agent_name TEXT", "run_id TEXT", "memory_id INTEGER"]) {
+		try {
+			db.exec(`ALTER TABLE pending_actions ADD COLUMN ${col}`);
+		} catch {
+			/* column already exists */
+		}
+	}
+
+	// Agent memory table
+	db.exec(`
+		CREATE TABLE IF NOT EXISTS agent_memory (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			agent_name TEXT NOT NULL,
+			run_id TEXT NOT NULL,
+			contact_id INTEGER,
+			deal_id INTEGER,
+			action_type TEXT NOT NULL,
+			payload TEXT,
+			reasoning TEXT,
+			outcome TEXT NOT NULL DEFAULT 'pending',
+			human_feedback TEXT,
+			created_at TEXT NOT NULL DEFAULT (datetime('now'))
+		);
+		CREATE INDEX IF NOT EXISTS idx_agent_memory_agent ON agent_memory(agent_name);
+		CREATE INDEX IF NOT EXISTS idx_agent_memory_contact ON agent_memory(contact_id);
+		CREATE INDEX IF NOT EXISTS idx_agent_memory_deal ON agent_memory(deal_id);
+		CREATE INDEX IF NOT EXISTS idx_agent_memory_run ON agent_memory(run_id);
+	`);
+
+	// Events table
+	db.exec(`
+		CREATE TABLE IF NOT EXISTS events (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			event_type TEXT NOT NULL,
+			entity_type TEXT NOT NULL,
+			entity_id INTEGER NOT NULL,
+			payload TEXT,
+			processed INTEGER NOT NULL DEFAULT 0,
+			created_at TEXT NOT NULL DEFAULT (datetime('now'))
+		);
+		CREATE INDEX IF NOT EXISTS idx_events_type ON events(event_type);
+		CREATE INDEX IF NOT EXISTS idx_events_processed ON events(processed);
+	`);
+
+	// Audit log table
+	db.exec(`
+		CREATE TABLE IF NOT EXISTS audit_log (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			actor TEXT NOT NULL,
+			command TEXT NOT NULL,
+			args TEXT,
+			result TEXT,
+			error TEXT,
+			duration_ms INTEGER,
+			created_at TEXT NOT NULL DEFAULT (datetime('now'))
+		);
+		CREATE INDEX IF NOT EXISTS idx_audit_log_actor ON audit_log(actor);
+		CREATE INDEX IF NOT EXISTS idx_audit_log_created_at ON audit_log(created_at);
+	`);
+
+	// Event hooks table
+	db.exec(`
+		CREATE TABLE IF NOT EXISTS event_hooks (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			event_type TEXT NOT NULL,
+			agent_name TEXT NOT NULL,
+			enabled INTEGER NOT NULL DEFAULT 1,
+			created_at TEXT NOT NULL DEFAULT (datetime('now')),
+			UNIQUE(event_type, agent_name)
+		);
+	`);
 }

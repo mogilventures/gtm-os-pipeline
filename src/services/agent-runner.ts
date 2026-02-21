@@ -1,7 +1,9 @@
+import { randomUUID } from "node:crypto";
 import { Client } from "@modelcontextprotocol/sdk/client";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 import { loadConfig } from "../config.js";
-import { getDbPath } from "../db/index.js";
+import { getDb, getDbPath } from "../db/index.js";
+import { writeAuditLog } from "./audit.js";
 
 interface AgentRunOptions {
 	prompt: string;
@@ -9,6 +11,8 @@ interface AgentRunOptions {
 	dbPath?: string;
 	model?: string;
 	verbose?: boolean;
+	agentName?: string;
+	runId?: string;
 	onText: (text: string) => void;
 }
 
@@ -24,14 +28,22 @@ export async function runAgent(opts: AgentRunOptions): Promise<void> {
 	const model =
 		opts.model || (config.agent.model as string) || "claude-sonnet-4-6";
 	const dbPath = getDbPath(opts.dbPath);
+	const runId = opts.runId || randomUUID();
+
+	const mcpArgs = [
+		new URL("../../bin/mcp.js", import.meta.url).pathname,
+		"--db",
+		dbPath,
+	];
+
+	if (opts.agentName) {
+		mcpArgs.push("--agent-name", opts.agentName);
+	}
+	mcpArgs.push("--run-id", runId);
 
 	const transport = new StdioClientTransport({
 		command: "node",
-		args: [
-			new URL("../../bin/mcp.js", import.meta.url).pathname,
-			"--db",
-			dbPath,
-		],
+		args: mcpArgs,
 	});
 	const mcpClient = new Client({ name: "pipeline-agent", version: "0.1.0" });
 	await mcpClient.connect(transport);
@@ -70,11 +82,23 @@ export async function runAgent(opts: AgentRunOptions): Promise<void> {
 					if (opts.verbose) {
 						opts.onText(`\n[Tool: ${block.name}]`);
 					}
+					const toolStart = Date.now();
 					try {
 						const result = await mcpClient.callTool({
 							name: block.name,
 							arguments: block.input as Record<string, unknown>,
 						});
+						const toolDuration = Date.now() - toolStart;
+						try {
+							const db = getDb(opts.dbPath);
+							writeAuditLog(db, {
+								actor: opts.agentName || "agent",
+								command: block.name,
+								args: JSON.stringify(block.input),
+								result: "success",
+								duration_ms: toolDuration,
+							});
+						} catch { /* audit failure must not break agent */ }
 						toolResults.push({
 							type: "tool_result",
 							tool_use_id: block.id,
@@ -83,6 +107,18 @@ export async function runAgent(opts: AgentRunOptions): Promise<void> {
 								.join("\n"),
 						});
 					} catch (error) {
+						const toolDuration = Date.now() - toolStart;
+						try {
+							const db = getDb(opts.dbPath);
+							writeAuditLog(db, {
+								actor: opts.agentName || "agent",
+								command: block.name,
+								args: JSON.stringify(block.input),
+								result: "error",
+								error: error instanceof Error ? error.message : String(error),
+								duration_ms: toolDuration,
+							});
+						} catch { /* audit failure must not break agent */ }
 						toolResults.push({
 							type: "tool_result",
 							tool_use_id: block.id,

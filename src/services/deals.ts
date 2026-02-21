@@ -2,6 +2,7 @@ import { and, eq, lte } from "drizzle-orm";
 import { loadConfig } from "../config.js";
 import type { PipelineDB } from "../db/index.js";
 import { schema } from "../db/index.js";
+import { emitEvent } from "./events.js";
 
 interface AddDealInput {
 	title: string;
@@ -24,7 +25,7 @@ export function addDeal(db: PipelineDB, input: AddDealInput) {
 		);
 	}
 
-	return db
+	const deal = db
 		.insert(schema.deals)
 		.values({
 			title: input.title,
@@ -37,6 +38,14 @@ export function addDeal(db: PipelineDB, input: AddDealInput) {
 		})
 		.returning()
 		.get();
+
+	emitEvent(db, "deal_created", "deal", deal.id, {
+		title: deal.title,
+		stage: deal.stage,
+		value: deal.value,
+	});
+
+	return deal;
 }
 
 export function listDeals(
@@ -99,10 +108,21 @@ export function moveDeal(db: PipelineDB, dealId: number, stage: string) {
 		);
 	}
 
+	const old = db
+		.select({ stage: schema.deals.stage })
+		.from(schema.deals)
+		.where(eq(schema.deals.id, dealId))
+		.get();
+
 	db.update(schema.deals)
 		.set({ stage, updated_at: new Date().toISOString() })
 		.where(eq(schema.deals.id, dealId))
 		.run();
+
+	emitEvent(db, "deal_stage_changed", "deal", dealId, {
+		from_stage: old?.stage,
+		to_stage: stage,
+	});
 }
 
 export function closeDeal(

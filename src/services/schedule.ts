@@ -137,6 +137,7 @@ export async function runDueSchedules(
 				systemPrompt: agent.prompt,
 				dbPath,
 				verbose: opts.verbose,
+				agentName: schedule.agent_name,
 				onText: (text) => {
 					outputParts.push(text);
 				},

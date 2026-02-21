@@ -26,6 +26,9 @@ export default class Approve extends BaseCommand {
 		list: Flags.boolean({ description: "List pending actions without acting" }),
 		all: Flags.boolean({ description: "Approve all pending actions" }),
 		reject: Flags.integer({ description: "Reject a specific action by ID" }),
+		reason: Flags.string({
+			description: "Reason for rejection (used with --reject)",
+		}),
 	};
 
 	private logAction(action: PendingAction): void {
@@ -41,7 +44,7 @@ export default class Approve extends BaseCommand {
 		const db = getDb(flags.db);
 
 		if (flags.reject) {
-			rejectAction(db, flags.reject);
+			rejectAction(db, flags.reject, flags.reason);
 			this.log(`Rejected action #${flags.reject}`);
 			return;
 		}
@@ -85,7 +88,7 @@ export default class Approve extends BaseCommand {
 			return;
 		}
 
-		const { select } = await import("@inquirer/prompts");
+		const { input, select } = await import("@inquirer/prompts");
 
 		for (const action of pending) {
 			this.log("");
@@ -104,7 +107,11 @@ export default class Approve extends BaseCommand {
 				const result = await approveAction(db, action.id);
 				this.log(`  → ${result}`);
 			} else if (choice === "reject") {
-				rejectAction(db, action.id);
+				const reason = await input({
+					message: "Rejection reason (optional):",
+					default: "",
+				});
+				rejectAction(db, action.id, reason || undefined);
 				this.log("  → Rejected");
 			} else {
 				this.log("  → Skipped");

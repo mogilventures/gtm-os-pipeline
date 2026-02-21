@@ -1,6 +1,7 @@
 import { and, eq, like, sql } from "drizzle-orm";
 import type { PipelineDB } from "../db/index.js";
 import { schema } from "../db/index.js";
+import { emitEvent } from "./events.js";
 
 interface AddContactInput {
 	name: string;
@@ -86,6 +87,11 @@ export function addContact(db: PipelineDB, input: AddContactInput): ContactRow {
 		})
 		.returning()
 		.get();
+
+	emitEvent(db, "contact_added", "contact", contact.id, {
+		name: person.name,
+		email: person.email,
+	});
 
 	return {
 		id: contact.id,

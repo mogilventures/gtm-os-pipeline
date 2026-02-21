@@ -25,6 +25,7 @@ export default class AgentQualify extends BaseCommand {
 			dbPath: flags.db,
 			model: flags.model,
 			verbose: flags.verbose,
+			agentName: "qualify",
 			onText: (text) => this.log(text),
 		});
 	}

@@ -117,11 +117,14 @@ export const tasks = sqliteTable("tasks", {
 // ── Pending Actions (agent proposals) ───────────────────────────
 export const pendingActions = sqliteTable("pending_actions", {
 	id: integer("id").primaryKey({ autoIncrement: true }),
-	action_type: text("action_type").notNull(), // send_email, update_stage, create_task, log_note, create_edge
+	action_type: text("action_type").notNull(), // send_email, update_stage, create_task, log_note, create_edge, complete_task, update_warmth, update_priority
 	payload: text("payload", { mode: "json" }).$type<Record<string, unknown>>(),
 	reasoning: text("reasoning"),
 	status: text("status").notNull().default("pending"), // pending, approved, rejected
 	resolved_at: text("resolved_at"),
+	agent_name: text("agent_name"),
+	run_id: text("run_id"),
+	memory_id: integer("memory_id"),
 	created_at: text("created_at")
 		.notNull()
 		.$defaultFn(() => new Date().toISOString()),
@@ -198,3 +201,83 @@ export const edges = sqliteTable(
 		index("idx_edges_relation").on(table.relation),
 	],
 );
+
+// ── Agent Memory ────────────────────────────────────────────────
+export const agentMemory = sqliteTable(
+	"agent_memory",
+	{
+		id: integer("id").primaryKey({ autoIncrement: true }),
+		agent_name: text("agent_name").notNull(),
+		run_id: text("run_id").notNull(),
+		contact_id: integer("contact_id"),
+		deal_id: integer("deal_id"),
+		action_type: text("action_type").notNull(),
+		payload: text("payload", { mode: "json" }).$type<Record<string, unknown>>(),
+		reasoning: text("reasoning"),
+		outcome: text("outcome").notNull().default("pending"), // pending, approved, rejected
+		human_feedback: text("human_feedback"),
+		created_at: text("created_at")
+			.notNull()
+			.$defaultFn(() => new Date().toISOString()),
+	},
+	(table) => [
+		index("idx_agent_memory_agent").on(table.agent_name),
+		index("idx_agent_memory_contact").on(table.contact_id),
+		index("idx_agent_memory_deal").on(table.deal_id),
+		index("idx_agent_memory_run").on(table.run_id),
+	],
+);
+
+// ── Events ──────────────────────────────────────────────────────
+export const events = sqliteTable(
+	"events",
+	{
+		id: integer("id").primaryKey({ autoIncrement: true }),
+		event_type: text("event_type").notNull(),
+		entity_type: text("entity_type").notNull(),
+		entity_id: integer("entity_id").notNull(),
+		payload: text("payload", { mode: "json" }).$type<Record<string, unknown>>(),
+		processed: integer("processed", { mode: "boolean" })
+			.notNull()
+			.default(false),
+		created_at: text("created_at")
+			.notNull()
+			.$defaultFn(() => new Date().toISOString()),
+	},
+	(table) => [
+		index("idx_events_type").on(table.event_type),
+		index("idx_events_processed").on(table.processed),
+	],
+);
+
+// ── Audit Log ──────────────────────────────────────────────────
+export const auditLog = sqliteTable(
+	"audit_log",
+	{
+		id: integer("id").primaryKey({ autoIncrement: true }),
+		actor: text("actor").notNull(),
+		command: text("command").notNull(),
+		args: text("args"),
+		result: text("result"),
+		error: text("error"),
+		duration_ms: integer("duration_ms"),
+		created_at: text("created_at")
+			.notNull()
+			.$defaultFn(() => new Date().toISOString()),
+	},
+	(table) => [
+		index("idx_audit_log_actor").on(table.actor),
+		index("idx_audit_log_created_at").on(table.created_at),
+	],
+);
+
+// ── Event Hooks ─────────────────────────────────────────────────
+export const eventHooks = sqliteTable("event_hooks", {
+	id: integer("id").primaryKey({ autoIncrement: true }),
+	event_type: text("event_type").notNull(),
+	agent_name: text("agent_name").notNull(),
+	enabled: integer("enabled", { mode: "boolean" }).notNull().default(true),
+	created_at: text("created_at")
+		.notNull()
+		.$defaultFn(() => new Date().toISOString()),
+});

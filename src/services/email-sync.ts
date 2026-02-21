@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm";
 import type { PipelineDB } from "../db/index.js";
 import { schema } from "../db/index.js";
 import { fetchInboundEmailDetail, fetchInboundEmails } from "./email.js";
+import { emitEvent } from "./events.js";
 
 interface SyncResult {
 	synced: number;
@@ -82,7 +83,8 @@ export async function syncInboundEmails(
 		}
 
 		// Insert as interaction
-		db.insert(schema.interactions)
+		const interaction = db
+			.insert(schema.interactions)
 			.values({
 				contact_id: contactId,
 				type: "email",
@@ -93,7 +95,14 @@ export async function syncInboundEmails(
 				from_address: email.from,
 				occurred_at: email.created_at || new Date().toISOString(),
 			})
-			.run();
+			.returning()
+			.get();
+
+		emitEvent(db, "email_received", "interaction", interaction.id, {
+			from: email.from,
+			subject: email.subject,
+			contact_id: contactId,
+		});
 
 		// Touch contact's updated_at if matched
 		if (contactId) {

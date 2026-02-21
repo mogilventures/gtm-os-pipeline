@@ -4,21 +4,30 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { getDb, schema } from "../db/index.js";
+import { getRegisteredActionTypes } from "../services/action-handlers.js";
 import {
 	editContact,
 	listContacts,
 	showContact,
 } from "../services/contacts.js";
 import { getFields, setField } from "../services/custom-fields.js";
+import { getDashboard } from "../services/dashboard.js";
 import { listDeals } from "../services/deals.js";
 import { createEdge, getRelated, resolveEntity } from "../services/graph.js";
 import { listInteractions } from "../services/interactions.js";
 import { listOrganizations } from "../services/organizations.js";
 import { searchAll } from "../services/search.js";
+import { listTasks } from "../services/tasks.js";
+import { getTimeline } from "../services/timeline.js";
 
-// Parse --db flag from CLI args
+// Parse CLI args
 const dbArgIdx = process.argv.indexOf("--db");
 const dbPath = dbArgIdx !== -1 ? process.argv[dbArgIdx + 1] : undefined;
+const agentNameIdx = process.argv.indexOf("--agent-name");
+const agentName =
+	agentNameIdx !== -1 ? process.argv[agentNameIdx + 1] : undefined;
+const runIdIdx = process.argv.indexOf("--run-id");
+const runId = runIdIdx !== -1 ? process.argv[runIdIdx + 1] : undefined;
 
 const db = getDb(dbPath);
 
@@ -147,22 +156,47 @@ server.registerTool(
 server.registerTool(
 	"propose_action",
 	{
-		description: "Propose an action for human approval",
+		description: `Propose an action for human approval. Available action types: ${getRegisteredActionTypes().join(", ")}`,
 		inputSchema: {
 			action_type: z
 				.string()
-				.describe(
-					"Type of action (send_email, update_stage, create_task, log_note, create_edge)",
-				),
+				.describe(`Type of action: ${getRegisteredActionTypes().join(", ")}`),
 			payload: z.string().describe("Action payload as JSON string"),
 			reasoning: z.string().describe("Why this action is recommended"),
 		},
 	},
 	async ({ action_type, payload, reasoning }) => {
 		const parsedPayload = JSON.parse(payload);
+
+		// Write to agent_memory if we have agent context
+		let memoryId: number | undefined;
+		if (agentName && runId) {
+			const mem = db
+				.insert(schema.agentMemory)
+				.values({
+					agent_name: agentName,
+					run_id: runId,
+					contact_id: parsedPayload.contact_id as number | undefined,
+					deal_id: parsedPayload.deal_id as number | undefined,
+					action_type,
+					payload: parsedPayload,
+					reasoning,
+				})
+				.returning()
+				.get();
+			memoryId = mem.id;
+		}
+
 		const action = db
 			.insert(schema.pendingActions)
-			.values({ action_type, payload: parsedPayload, reasoning })
+			.values({
+				action_type,
+				payload: parsedPayload,
+				reasoning,
+				agent_name: agentName,
+				run_id: runId,
+				memory_id: memoryId,
+			})
 			.returning()
 			.get();
 		return {
@@ -384,6 +418,169 @@ server.registerTool(
 			.sort((a, b) => a.occurred_at.localeCompare(b.occurred_at))
 			.slice(-(limit ?? 20));
 		return { content: [{ type: "text", text: JSON.stringify(rows, null, 2) }] };
+	},
+);
+
+// ── New tools ───────────────────────────────────────────────────
+
+server.registerTool(
+	"list_tasks",
+	{
+		description:
+			"List open tasks with optional filters (due today, overdue, by contact/deal)",
+		inputSchema: {
+			due_today: z.boolean().optional().describe("Only show tasks due today"),
+			overdue: z.boolean().optional().describe("Only show overdue tasks"),
+			contact_id: z.number().optional().describe("Filter by contact ID"),
+			deal_id: z.number().optional().describe("Filter by deal ID"),
+		},
+	},
+	async ({ due_today, overdue, contact_id, deal_id }) => {
+		const tasks = listTasks(db, {
+			dueToday: due_today,
+			overdue,
+			contactId: contact_id,
+			dealId: deal_id,
+		});
+		return {
+			content: [{ type: "text", text: JSON.stringify(tasks, null, 2) }],
+		};
+	},
+);
+
+server.registerTool(
+	"get_deal_detail",
+	{
+		description:
+			"Get full deal details including contact, interactions, and tasks",
+		inputSchema: {
+			deal_id: z.number().describe("Deal ID"),
+		},
+	},
+	async ({ deal_id }) => {
+		const deal = db
+			.select()
+			.from(schema.deals)
+			.where(eq(schema.deals.id, deal_id))
+			.get();
+		if (!deal) return { content: [{ type: "text", text: "Deal not found" }] };
+
+		const contact = deal.contact_id ? showContact(db, deal.contact_id) : null;
+		const interactions = listInteractions(db, { dealId: deal_id });
+		const tasks = listTasks(db, { dealId: deal_id });
+
+		return {
+			content: [
+				{
+					type: "text",
+					text: JSON.stringify({ deal, contact, interactions, tasks }, null, 2),
+				},
+			],
+		};
+	},
+);
+
+server.registerTool(
+	"get_timeline",
+	{
+		description: "Get recent activity feed (interactions, tasks, deals)",
+		inputSchema: {
+			last_days: z
+				.number()
+				.optional()
+				.describe("Number of days to look back (default 30)"),
+			type: z
+				.string()
+				.optional()
+				.describe(
+					"Filter by type: interaction, task_completed, deal_created, deal_closed",
+				),
+			contact_id: z.number().optional().describe("Filter by contact ID"),
+			limit: z
+				.number()
+				.optional()
+				.describe("Max events to return (default 50)"),
+		},
+	},
+	async ({ last_days, type, contact_id, limit }) => {
+		const events = getTimeline(db, {
+			lastDays: last_days,
+			type,
+			contactId: contact_id,
+			limit,
+		});
+		return {
+			content: [{ type: "text", text: JSON.stringify(events, null, 2) }],
+		};
+	},
+);
+
+server.registerTool(
+	"get_dashboard",
+	{
+		description:
+			"Get pipeline health summary: deal stages, overdue tasks, stale contacts, pending actions",
+		inputSchema: {},
+	},
+	async () => {
+		const data = getDashboard(db);
+		return {
+			content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
+		};
+	},
+);
+
+server.registerTool(
+	"recall_memory",
+	{
+		description:
+			"Query past agent proposals and their outcomes (approved/rejected). Use before proposing to avoid repeating rejected actions.",
+		inputSchema: {
+			agent_name: z
+				.string()
+				.optional()
+				.describe("Filter by agent name (defaults to current agent)"),
+			contact_id: z.number().optional().describe("Filter by contact ID"),
+			deal_id: z.number().optional().describe("Filter by deal ID"),
+			outcome: z
+				.string()
+				.optional()
+				.describe("Filter by outcome: pending, approved, rejected"),
+			limit: z
+				.number()
+				.optional()
+				.describe("Max memories to return (default 20)"),
+		},
+	},
+	async ({
+		agent_name: queryAgentName,
+		contact_id,
+		deal_id,
+		outcome,
+		limit,
+	}) => {
+		let rows = db.select().from(schema.agentMemory).all();
+
+		const filterAgent = queryAgentName || agentName;
+		if (filterAgent) {
+			rows = rows.filter((r) => r.agent_name === filterAgent);
+		}
+		if (contact_id) {
+			rows = rows.filter((r) => r.contact_id === contact_id);
+		}
+		if (deal_id) {
+			rows = rows.filter((r) => r.deal_id === deal_id);
+		}
+		if (outcome) {
+			rows = rows.filter((r) => r.outcome === outcome);
+		}
+
+		rows.sort((a, b) => b.created_at.localeCompare(a.created_at));
+		rows = rows.slice(0, limit ?? 20);
+
+		return {
+			content: [{ type: "text", text: JSON.stringify(rows, null, 2) }],
+		};
 	},
 );
 
