@@ -13,9 +13,13 @@ interface PipelineConfig {
 		auto_approve: boolean;
 	};
 	email: {
-		provider: "resend" | "none";
+		provider: "composio" | "none";
 		from: string;
-		resend_api_key: string;
+	};
+	integrations: {
+		composio_api_key: string;
+		user_id: string;
+		enabled: boolean;
 	};
 	[key: string]: unknown;
 }
@@ -39,7 +43,11 @@ const DEFAULT_CONFIG: PipelineConfig = {
 	email: {
 		provider: "none",
 		from: "",
-		resend_api_key: "",
+	},
+	integrations: {
+		composio_api_key: "",
+		user_id: "pipeline-crm-user",
+		enabled: false,
 	},
 };
 

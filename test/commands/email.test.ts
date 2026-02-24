@@ -21,8 +21,11 @@ describe("email commands", () => {
 
 	it("email:send fails without email configured", () => {
 		runPipeline(`contact:add "Jane Smith" --email jane@test.co ${dbFlag}`);
+		// Use HOME=tmpDir so no global config leaks in
 		expect(() =>
-			runPipeline(`email:send jane --subject "Test" --body "Hello" ${dbFlag}`),
+			runPipeline(`email:send jane --subject "Test" --body "Hello" ${dbFlag}`, {
+				HOME: tmpDir,
+			}),
 		).toThrow(/[Ee]mail not configured/);
 	});
 
@@ -98,7 +101,7 @@ describe("email commands", () => {
 
 	it("email:sync --help shows description", () => {
 		const output = runPipeline("email:sync --help");
-		expect(output).toContain("Sync inbound emails from Resend");
+		expect(output).toContain("Gmail is read via Composio");
 	});
 
 	it("unique index prevents duplicate message_id inserts", () => {

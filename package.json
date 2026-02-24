@@ -40,6 +40,7 @@
   "license": "MIT",
   "dependencies": {
     "@anthropic-ai/sdk": "^0.78.0",
+    "@composio/core": "^0.6.3",
     "@inquirer/prompts": "^8.2.1",
     "@modelcontextprotocol/sdk": "^1.26.0",
     "@oclif/core": "^4.8.0",
@@ -51,7 +52,6 @@
     "csv-stringify": "^6.6.0",
     "drizzle-orm": "^0.45.1",
     "fuse.js": "^7.1.0",
-    "resend": "^6.9.2",
     "smol-toml": "^1.6.0",
     "zod": "^4.3.6"
   },

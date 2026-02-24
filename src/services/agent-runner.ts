@@ -48,13 +48,62 @@ export async function runAgent(opts: AgentRunOptions): Promise<void> {
 	const mcpClient = new Client({ name: "pipeline-agent", version: "0.1.0" });
 	await mcpClient.connect(transport);
 
+	// Optionally connect to Composio MCP as second server
+	let composioClient: Client | null = null;
+	const localToolNames = new Set<string>();
+
 	try {
 		const { tools: mcpTools } = await mcpClient.listTools();
-		const tools = mcpTools.map((t: any) => ({
+		const tools: any[] = mcpTools.map((t: any) => ({
 			name: t.name,
 			description: t.description || "",
 			input_schema: t.inputSchema,
 		}));
+
+		// Track local tool names for routing
+		for (const t of tools) {
+			localToolNames.add(t.name);
+		}
+
+		// Connect to Composio MCP if configured
+		try {
+			const { getComposioMcpConfig } = await import("./composio.js");
+			const composioMcp = await getComposioMcpConfig();
+			if (composioMcp) {
+				const { StreamableHTTPClientTransport } = await import(
+					"@modelcontextprotocol/sdk/client/streamableHttp.js"
+				);
+				const composioTransport = new StreamableHTTPClientTransport(
+					new URL(composioMcp.url),
+					{ requestInit: { headers: composioMcp.headers } },
+				);
+				composioClient = new Client({
+					name: "pipeline-composio",
+					version: "0.1.0",
+				});
+				await composioClient.connect(composioTransport);
+
+				const { tools: composioTools } = await composioClient.listTools();
+				for (const t of composioTools) {
+					// Avoid name collisions — Composio tools win for external services
+					if (!localToolNames.has(t.name)) {
+						tools.push({
+							name: t.name,
+							description: t.description || "",
+							input_schema: t.inputSchema,
+						});
+					}
+				}
+
+				if (opts.verbose) {
+					opts.onText(
+						`\n[Composio] ${composioTools.length} external tool(s) available`,
+					);
+				}
+			}
+		} catch {
+			/* Composio not configured or unavailable — continue with local tools only */
+		}
 
 		const { default: Anthropic } = await import("@anthropic-ai/sdk");
 		const client = new Anthropic({ apiKey });
@@ -83,8 +132,14 @@ export async function runAgent(opts: AgentRunOptions): Promise<void> {
 						opts.onText(`\n[Tool: ${block.name}]`);
 					}
 					const toolStart = Date.now();
+
+					// Route to the correct MCP client
+					const targetClient = localToolNames.has(block.name)
+						? mcpClient
+						: composioClient || mcpClient;
+
 					try {
-						const result = await mcpClient.callTool({
+						const result = await targetClient.callTool({
 							name: block.name,
 							arguments: block.input as Record<string, unknown>,
 						});
@@ -98,7 +153,9 @@ export async function runAgent(opts: AgentRunOptions): Promise<void> {
 								result: "success",
 								duration_ms: toolDuration,
 							});
-						} catch { /* audit failure must not break agent */ }
+						} catch {
+							/* audit failure must not break agent */
+						}
 						toolResults.push({
 							type: "tool_result",
 							tool_use_id: block.id,
@@ -118,7 +175,9 @@ export async function runAgent(opts: AgentRunOptions): Promise<void> {
 								error: error instanceof Error ? error.message : String(error),
 								duration_ms: toolDuration,
 							});
-						} catch { /* audit failure must not break agent */ }
+						} catch {
+							/* audit failure must not break agent */
+						}
 						toolResults.push({
 							type: "tool_result",
 							tool_use_id: block.id,
@@ -141,5 +200,8 @@ export async function runAgent(opts: AgentRunOptions): Promise<void> {
 		}
 	} finally {
 		await mcpClient.close().catch(() => {});
+		if (composioClient) {
+			await composioClient.close().catch(() => {});
+		}
 	}
 }

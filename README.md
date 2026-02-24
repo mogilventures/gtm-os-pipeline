@@ -46,7 +46,7 @@ pipeline timeline --days 30
 | **org** | `list` `show` `edit` `contacts` | Organizations and their members |
 | **task** | `add` `list` `done` | To-dos attached to contacts or deals |
 | **log** | `call` `email` `meeting` `list` | Record interactions |
-| **email** | `send` `check` `inbox` `thread` | Send and receive email (via Resend) |
+| **email** | `send` `inbox` `thread` `sync` | Send and receive email (via Composio Gmail) |
 | **agent** | *(free-form prompt)* | Chat with the CRM assistant |
 | **agent** | `enrich` `follow-up` `digest` `qualify` | Built-in agent workflows |
 | **schedule** | `add` `list` `remove` `run` `install` `uninstall` | Automated agent runs via cron |
@@ -119,9 +119,12 @@ model = "claude-sonnet-4-6"
 auto_approve = false
 
 [email]
-provider = "resend"
-from = "you@yourdomain.com"
-resend_api_key = "re_..."
+provider = "composio"
+from = ""
+
+[integrations]
+composio_api_key = "your-composio-api-key"
+enabled = true
 ```
 
 Read and write config from the CLI:

@@ -4,7 +4,8 @@ import { getDb } from "../../db/index.js";
 import { syncInboundEmails } from "../../services/email-sync.js";
 
 export default class EmailSync extends BaseCommand {
-	static override description = "Sync inbound emails from Resend";
+	static override description =
+		"[Deprecated] Use 'pipeline agent \"check my inbox\"' — Gmail is read via Composio";
 
 	static override examples = [
 		"<%= config.bin %> email:sync",

@@ -50,15 +50,11 @@ export function getAuditLog(
 		.$dynamic();
 
 	if (filters?.actor) {
-		query = query.where(
-			like(schema.auditLog.actor, `%${filters.actor}%`),
-		);
+		query = query.where(like(schema.auditLog.actor, `%${filters.actor}%`));
 	}
 
 	if (filters?.command) {
-		query = query.where(
-			like(schema.auditLog.command, `%${filters.command}%`),
-		);
+		query = query.where(like(schema.auditLog.command, `%${filters.command}%`));
 	}
 
 	const limit = filters?.last ?? 20;

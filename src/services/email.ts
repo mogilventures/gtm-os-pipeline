@@ -19,127 +19,61 @@ export async function sendEmail(
 
 	if (config.email.provider === "none" || !config.email.provider) {
 		throw new Error(
-			"Email not configured. Run `pipeline config:set email.provider resend` and set your API key.\n" +
-				"See: https://resend.com/api-keys",
+			"Email not configured. Run:\n" +
+				"  pipeline config:set email.provider composio",
 		);
 	}
 
-	if (!config.email.from) {
-		throw new Error(
-			"Email 'from' address not configured. Run `pipeline config:set email.from you@yourdomain.com`",
-		);
-	}
-
-	if (config.email.provider === "resend") {
-		return sendViaResend(opts, config.email);
+	if (config.email.provider === "composio") {
+		return sendViaComposio(opts);
 	}
 
 	throw new Error(`Unknown email provider: ${config.email.provider}`);
 }
 
-async function sendViaResend(
+async function sendViaComposio(
 	opts: SendEmailOptions,
-	emailConfig: { from: string; resend_api_key: string },
 ): Promise<SendEmailResult> {
-	const apiKey = emailConfig.resend_api_key || process.env.RESEND_API_KEY;
+	const { Composio } = await import("@composio/core");
+	const { loadConfig: loadCfg } = await import("../config.js");
+	const cfg = loadCfg();
+	const apiKey =
+		(cfg.integrations?.composio_api_key as string) ||
+		process.env.COMPOSIO_API_KEY;
 	if (!apiKey) {
 		throw new Error(
-			"Resend API key not configured. Set it via:\n" +
-				"  pipeline config:set email.resend_api_key re_xxxxxxxxxxxx\n" +
-				"  or: export RESEND_API_KEY=re_xxxxxxxxxxxx",
+			"Composio API key not configured. Run: pipeline config:set integrations.composio_api_key <key>",
 		);
 	}
+	const composio = new Composio({ apiKey });
+	const userId =
+		(cfg.integrations?.user_id as string) || "pipeline-crm-user";
 
-	const { Resend } = await import("resend");
-	const resend = new Resend(apiKey);
-
-	const { data, error } = await resend.emails.send({
-		from: emailConfig.from,
-		to: [opts.to],
-		subject: opts.subject,
-		text: opts.body,
-		...(opts.replyTo ? { replyTo: opts.replyTo } : {}),
+	const result = await composio.tools.execute("GMAIL_SEND_EMAIL", {
+		userId,
+		arguments: {
+			recipient_email: opts.to,
+			subject: opts.subject,
+			body: opts.body,
+			...(opts.replyTo ? { in_reply_to: opts.replyTo } : {}),
+		},
+		dangerouslySkipVersionCheck: true,
 	});
 
-	if (error) {
-		throw new Error(`Resend error: ${error.message}`);
-	}
+	const resultData = result.data as Record<string, unknown> | undefined;
+	const messageId =
+		(resultData?.id as string) ||
+		(resultData?.messageId as string) ||
+		`composio-${Date.now()}`;
 
-	return { id: data!.id, provider: "resend" };
+	return { id: messageId, provider: "composio/gmail" };
 }
 
 export function isEmailConfigured(): boolean {
 	try {
 		const config = loadConfig();
-		return config.email.provider !== "none" && !!config.email.from;
+		return config.email.provider === "composio";
 	} catch {
 		return false;
 	}
-}
-
-interface InboundEmail {
-	id: string;
-	from: string;
-	to: string[];
-	subject: string;
-	created_at: string;
-}
-
-interface InboundEmailDetail extends InboundEmail {
-	text?: string;
-	html?: string;
-}
-
-interface FetchInboundResult {
-	data: InboundEmail[];
-	has_more: boolean;
-}
-
-function getResendApiKey(): string {
-	const config = loadConfig();
-	const apiKey = config.email.resend_api_key || process.env.RESEND_API_KEY;
-	if (!apiKey) {
-		throw new Error("Resend API key not configured.");
-	}
-	return apiKey;
-}
-
-export async function fetchInboundEmails(opts?: {
-	limit?: number;
-}): Promise<FetchInboundResult> {
-	const apiKey = getResendApiKey();
-	const limit = opts?.limit ?? 50;
-
-	const res = await fetch(`https://api.resend.com/emails?limit=${limit}`, {
-		headers: { Authorization: `Bearer ${apiKey}` },
-	});
-
-	if (!res.ok) {
-		throw new Error(`Resend API error (${res.status}): ${await res.text()}`);
-	}
-
-	const body = (await res.json()) as {
-		data: InboundEmail[];
-		has_more?: boolean;
-	};
-	return {
-		data: body.data ?? [],
-		has_more: body.has_more ?? false,
-	};
-}
-
-export async function fetchInboundEmailDetail(
-	id: string,
-): Promise<InboundEmailDetail> {
-	const apiKey = getResendApiKey();
-
-	const res = await fetch(`https://api.resend.com/emails/${id}`, {
-		headers: { Authorization: `Bearer ${apiKey}` },
-	});
-
-	if (!res.ok) {
-		throw new Error(`Resend API error (${res.status}): ${await res.text()}`);
-	}
-
-	return (await res.json()) as InboundEmailDetail;
 }

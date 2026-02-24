@@ -48,7 +48,7 @@ MCP Server  (src/mcp/)       ──→  Services (src/services/)  ──→  DB 
 - **ESM**: `"type": "module"` — all imports use `.js` extensions.
 - **Strict TypeScript**: `module: Node16`, `target: ES2022`, strict mode.
 - **Biome**: tabs for indentation, recommended lint rules. Run `npm run format` before committing.
-- **Dynamic imports**: Heavy optional deps (`resend`, `@anthropic-ai/sdk`) are loaded via `await import()` so the CLI stays fast for non-email/agent commands.
+- **Dynamic imports**: Heavy optional deps (`@anthropic-ai/sdk`, `@composio/core`) are loaded via `await import()` so the CLI stays fast for non-email/agent commands.
 
 ## Testing
 
@@ -56,7 +56,7 @@ Tests are **integration-style**: they run the real CLI binary via `execSync` and
 
 - `test/helpers.ts` provides `runPipeline(args, env?)`, `createTmpDir()`, `cleanupTmpDir()`.
 - Each test creates a temp dir with its own DB via `--db /tmp/pipeline-test-xxx/test.db`.
-- For data that requires external services (email, Resend API), tests insert synthetic rows directly via `better-sqlite3`.
+- For data that requires external services (email, Composio), tests insert synthetic rows directly via `better-sqlite3`.
 - MCP tests (`test/commands/mcp.test.ts`) spawn the MCP server as a child process and call tools via `@modelcontextprotocol/sdk` client.
 - Vitest config: 30-second timeouts (needed since each assertion spawns a node process).
 

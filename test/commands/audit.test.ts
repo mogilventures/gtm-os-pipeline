@@ -44,9 +44,7 @@ describe("audit", () => {
 
 	it("filters by --actor", () => {
 		runPipeline(`contact:add "Charlie Test" ${dbFlag}`);
-		const out = JSON.parse(
-			runPipeline(`audit --actor human --json ${dbFlag}`),
-		);
+		const out = JSON.parse(runPipeline(`audit --actor human --json ${dbFlag}`));
 		expect(out.length).toBeGreaterThan(0);
 		for (const entry of out) {
 			expect(entry.actor).toContain("human");

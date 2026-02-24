@@ -49,6 +49,17 @@ export default class ScheduleRun extends BaseCommand {
 			}
 		}
 
+		// Poll Composio triggers
+		try {
+			const { pollTriggerEvents } = await import("../../services/composio.js");
+			const triggerCount = await pollTriggerEvents(db);
+			if (triggerCount > 0 && flags.verbose) {
+				this.log(`[COMPOSIO] ${triggerCount} trigger event(s) received`);
+			}
+		} catch {
+			/* Composio not configured — skip */
+		}
+
 		// Process event hooks if enabled
 		if (flags.hooks) {
 			scanForTimeEvents(db);

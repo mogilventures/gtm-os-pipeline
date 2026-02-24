@@ -271,6 +271,43 @@ export const auditLog = sqliteTable(
 	],
 );
 
+// ── Connected Accounts (Composio integrations) ─────────────────
+export const connectedAccounts = sqliteTable(
+	"connected_accounts",
+	{
+		id: integer("id").primaryKey({ autoIncrement: true }),
+		toolkit: text("toolkit").notNull(),
+		composio_account_id: text("composio_account_id").notNull().unique(),
+		label: text("label"),
+		user_id: text("user_id"),
+		status: text("status").notNull().default("active"),
+		created_at: text("created_at")
+			.notNull()
+			.$defaultFn(() => new Date().toISOString()),
+		updated_at: text("updated_at")
+			.notNull()
+			.$defaultFn(() => new Date().toISOString()),
+	},
+	(table) => [index("idx_connected_accounts_toolkit").on(table.toolkit)],
+);
+
+// ── Composio Triggers ──────────────────────────────────────────
+export const composioTriggers = sqliteTable("composio_triggers", {
+	id: integer("id").primaryKey({ autoIncrement: true }),
+	trigger_id: text("trigger_id").notNull().unique(),
+	toolkit: text("toolkit").notNull(),
+	trigger_slug: text("trigger_slug").notNull(),
+	connected_account_id: integer("connected_account_id").references(
+		() => connectedAccounts.id,
+	),
+	config: text("config", { mode: "json" }).$type<Record<string, unknown>>(),
+	enabled: integer("enabled", { mode: "boolean" }).notNull().default(true),
+	last_polled_at: text("last_polled_at"),
+	created_at: text("created_at")
+		.notNull()
+		.$defaultFn(() => new Date().toISOString()),
+});
+
 // ── Event Hooks ─────────────────────────────────────────────────
 export const eventHooks = sqliteTable("event_hooks", {
 	id: integer("id").primaryKey({ autoIncrement: true }),

@@ -160,8 +160,8 @@ describe("approval workflow", () => {
 			"Stale contact",
 		);
 
-		// Email not configured, so sending will fail but should log as draft
-		const output = runPipeline(`approve --all ${dbFlag}`);
+		// Use HOME=tmpDir so no global email config leaks in; sending will fail
+		const output = runPipeline(`approve --all ${dbFlag}`, { HOME: tmpDir });
 		expect(output).toContain("Email sending failed");
 		expect(output).toContain("logged as draft");
 	});

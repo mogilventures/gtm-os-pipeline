@@ -263,6 +263,36 @@ function runMigrations(db: Database.Database): void {
 		CREATE INDEX IF NOT EXISTS idx_audit_log_created_at ON audit_log(created_at);
 	`);
 
+	// Connected accounts table (Composio integrations)
+	db.exec(`
+		CREATE TABLE IF NOT EXISTS connected_accounts (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			toolkit TEXT NOT NULL,
+			composio_account_id TEXT NOT NULL UNIQUE,
+			label TEXT,
+			user_id TEXT,
+			status TEXT NOT NULL DEFAULT 'active',
+			created_at TEXT NOT NULL DEFAULT (datetime('now')),
+			updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+		);
+		CREATE INDEX IF NOT EXISTS idx_connected_accounts_toolkit ON connected_accounts(toolkit);
+	`);
+
+	// Composio triggers table
+	db.exec(`
+		CREATE TABLE IF NOT EXISTS composio_triggers (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			trigger_id TEXT NOT NULL UNIQUE,
+			toolkit TEXT NOT NULL,
+			trigger_slug TEXT NOT NULL,
+			connected_account_id INTEGER REFERENCES connected_accounts(id),
+			config TEXT,
+			enabled INTEGER NOT NULL DEFAULT 1,
+			last_polled_at TEXT,
+			created_at TEXT NOT NULL DEFAULT (datetime('now'))
+		);
+	`);
+
 	// Event hooks table
 	db.exec(`
 		CREATE TABLE IF NOT EXISTS event_hooks (

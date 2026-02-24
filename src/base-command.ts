@@ -82,15 +82,11 @@ export abstract class BaseCommand extends Command {
 	): Promise<void> {
 		this._auditResult = "error";
 		this._auditError =
-			err.message.length > 500
-				? `${err.message.slice(0, 500)}…`
-				: err.message;
+			err.message.length > 500 ? `${err.message.slice(0, 500)}…` : err.message;
 		throw err;
 	}
 
-	protected override async finally(
-		_error: Error | undefined,
-	): Promise<void> {
+	protected override async finally(_error: Error | undefined): Promise<void> {
 		try {
 			const commandId = this.id;
 			if (!commandId || SKIP_AUDIT.has(commandId)) return;
