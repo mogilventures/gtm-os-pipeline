@@ -1,9 +1,11 @@
+import { randomUUID } from "node:crypto";
 import { describe, expect, it } from "vitest";
 import { runPipeline } from "../helpers.js";
 
 describe("status", () => {
 	it("shows not initialized when no DB exists", () => {
-		const output = runPipeline("status --db /tmp/nonexistent-pipeline-test.db");
+		const dbPath = `/tmp/pipeline-no-exist-${randomUUID()}.db`;
+		const output = runPipeline(`status --db ${dbPath}`);
 		expect(output).toContain("not initialized");
 	});
 
