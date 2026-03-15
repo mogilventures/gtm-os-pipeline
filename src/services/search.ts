@@ -5,10 +5,11 @@ import { fuzzySearch } from "../utils/fuzzy.js";
 import { getContactsForFuzzy } from "./contacts.js";
 import { getDealsForFuzzy } from "./deals.js";
 import { getOrgsForFuzzy } from "./organizations.js";
+import { getMilestonesForFuzzy, getProjectsForFuzzy } from "./projects.js";
 import { getTasksForFuzzy } from "./tasks.js";
 
 interface SearchResult {
-	type: "contact" | "deal" | "organization" | "task";
+	type: "contact" | "deal" | "organization" | "task" | "project" | "milestone";
 	id: number;
 	name: string;
 	score: number;
@@ -108,6 +109,58 @@ export function searchAll(db: PipelineDB, query: string): SearchResults {
 			name: m.item.name,
 			score: m.score,
 			detail: task?.due ? `due ${task.due}` : undefined,
+		});
+	}
+
+	// Search projects
+	const projectItems = getProjectsForFuzzy(db);
+	const projectMatches = fuzzySearch(projectItems, query);
+	for (const m of projectMatches) {
+		const project = db
+			.select({
+				stage: schema.projects.stage,
+				value: schema.projects.value,
+			})
+			.from(schema.projects)
+			.where(eq(schema.projects.id, m.item.id))
+			.get();
+		const parts: string[] = [];
+		if (project?.stage) parts.push(project.stage);
+		if (project?.value) parts.push(`$${project.value.toLocaleString()}`);
+		results.push({
+			type: "project",
+			id: m.item.id,
+			name: m.item.name,
+			score: m.score,
+			detail: parts.length > 0 ? parts.join(", ") : undefined,
+		});
+	}
+
+	// Search milestones
+	const milestoneItems = getMilestonesForFuzzy(db);
+	const milestoneMatches = fuzzySearch(milestoneItems, query);
+	for (const m of milestoneMatches) {
+		const milestone = db
+			.select({
+				due: schema.milestones.due,
+				project_name: schema.projects.name,
+			})
+			.from(schema.milestones)
+			.leftJoin(
+				schema.projects,
+				eq(schema.milestones.project_id, schema.projects.id),
+			)
+			.where(eq(schema.milestones.id, m.item.id))
+			.get();
+		const parts: string[] = [];
+		if (milestone?.project_name) parts.push(milestone.project_name);
+		if (milestone?.due) parts.push(`due ${milestone.due}`);
+		results.push({
+			type: "milestone",
+			id: m.item.id,
+			name: m.item.name,
+			score: m.score,
+			detail: parts.length > 0 ? parts.join(", ") : undefined,
 		});
 	}
 

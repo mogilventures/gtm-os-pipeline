@@ -5,9 +5,9 @@ import { getAgent, getBuiltinAgents } from "../../src/services/subagents.js";
 import { cleanupTmpDir, createTmpDir, runPipeline } from "../helpers.js";
 
 describe("subagent definitions", () => {
-	it("has eight builtin agents", () => {
+	it("has nine builtin agents", () => {
 		const agents = getBuiltinAgents();
-		expect(agents).toHaveLength(8);
+		expect(agents).toHaveLength(9);
 		expect(agents.map((a) => a.name)).toEqual([
 			"follow-up",
 			"enrich",
@@ -17,6 +17,7 @@ describe("subagent definitions", () => {
 			"deal-manager",
 			"meeting-prep",
 			"task-automator",
+			"delivery-check",
 		]);
 	});
 

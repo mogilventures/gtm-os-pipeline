@@ -4,7 +4,14 @@ import { schema } from "../db/index.js";
 
 interface TimelineEvent {
 	timestamp: string;
-	type: "interaction" | "task_completed" | "deal_created" | "deal_closed";
+	type:
+		| "interaction"
+		| "task_completed"
+		| "deal_created"
+		| "deal_closed"
+		| "project_created"
+		| "project_completed"
+		| "milestone_completed";
 	summary: string;
 	entity_type: string;
 	entity_id: number;
@@ -143,6 +150,80 @@ export function getTimeline(
 			entity_type: "deal",
 			entity_id: d.id,
 			entity_name: d.title,
+		});
+	}
+
+	// Projects created
+	const projectsCreated = db
+		.select({
+			id: schema.projects.id,
+			name: schema.projects.name,
+			value: schema.projects.value,
+			created_at: schema.projects.created_at,
+			contact_id: schema.projects.contact_id,
+		})
+		.from(schema.projects)
+		.all()
+		.filter((r) => r.created_at >= cutoffStr);
+
+	for (const p of projectsCreated) {
+		if (filters?.contactId && p.contact_id !== filters.contactId) continue;
+		const valuePart = p.value ? ` ($${p.value.toLocaleString()})` : "";
+		events.push({
+			timestamp: p.created_at,
+			type: "project_created",
+			summary: `New project: ${p.name}${valuePart}`,
+			entity_type: "project",
+			entity_id: p.id,
+			entity_name: p.name,
+		});
+	}
+
+	// Projects completed
+	const projectsCompleted = db
+		.select({
+			id: schema.projects.id,
+			name: schema.projects.name,
+			completed_at: schema.projects.completed_at,
+			contact_id: schema.projects.contact_id,
+		})
+		.from(schema.projects)
+		.all()
+		.filter((r) => r.completed_at && r.completed_at >= cutoffStr);
+
+	for (const p of projectsCompleted) {
+		if (filters?.contactId && p.contact_id !== filters.contactId) continue;
+		events.push({
+			timestamp: p.completed_at!,
+			type: "project_completed",
+			summary: `Project completed: ${p.name}`,
+			entity_type: "project",
+			entity_id: p.id,
+			entity_name: p.name,
+		});
+	}
+
+	// Milestones completed
+	const milestonesCompleted = db
+		.select({
+			id: schema.milestones.id,
+			title: schema.milestones.title,
+			completed_at: schema.milestones.completed_at,
+			project_id: schema.milestones.project_id,
+		})
+		.from(schema.milestones)
+		.where(eq(schema.milestones.completed, true))
+		.all()
+		.filter((r) => r.completed_at && r.completed_at >= cutoffStr);
+
+	for (const m of milestonesCompleted) {
+		events.push({
+			timestamp: m.completed_at!,
+			type: "milestone_completed",
+			summary: `Milestone completed: "${m.title}"`,
+			entity_type: "milestone",
+			entity_id: m.id,
+			entity_name: m.title,
 		});
 	}
 

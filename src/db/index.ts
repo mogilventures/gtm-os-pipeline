@@ -307,6 +307,52 @@ function runMigrations(db: Database.Database): void {
 		);
 	`);
 
+	// Projects table (delivery)
+	db.exec(`
+		CREATE TABLE IF NOT EXISTS projects (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			name TEXT NOT NULL,
+			deal_id INTEGER REFERENCES deals(id),
+			contact_id INTEGER REFERENCES contacts(id),
+			org_id INTEGER REFERENCES organizations(id),
+			stage TEXT NOT NULL DEFAULT 'kickoff',
+			value INTEGER,
+			notes TEXT,
+			started_at TEXT,
+			completed_at TEXT,
+			created_at TEXT NOT NULL DEFAULT (datetime('now')),
+			updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+		);
+	`);
+
+	// Milestones table
+	db.exec(`
+		CREATE TABLE IF NOT EXISTS milestones (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			project_id INTEGER NOT NULL REFERENCES projects(id),
+			title TEXT NOT NULL,
+			description TEXT,
+			contact_id INTEGER REFERENCES contacts(id),
+			due TEXT,
+			completed INTEGER DEFAULT 0,
+			completed_at TEXT,
+			created_at TEXT NOT NULL DEFAULT (datetime('now')),
+			updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+		);
+	`);
+
+	// Add project_id and milestone_id to tasks
+	for (const col of [
+		"project_id INTEGER REFERENCES projects(id)",
+		"milestone_id INTEGER REFERENCES milestones(id)",
+	]) {
+		try {
+			db.exec(`ALTER TABLE tasks ADD COLUMN ${col}`);
+		} catch {
+			/* column already exists */
+		}
+	}
+
 	// Event hooks table
 	db.exec(`
 		CREATE TABLE IF NOT EXISTS event_hooks (

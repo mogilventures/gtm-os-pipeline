@@ -16,6 +16,9 @@ interface PipelineConfig {
 		provider: "composio" | "none";
 		from: string;
 	};
+	delivery: {
+		stages: string[];
+	};
 	integrations: {
 		composio_api_key: string;
 		user_id: string;
@@ -43,6 +46,9 @@ const DEFAULT_CONFIG: PipelineConfig = {
 	email: {
 		provider: "none",
 		from: "",
+	},
+	delivery: {
+		stages: ["kickoff", "in_progress", "review", "complete"],
 	},
 	integrations: {
 		composio_api_key: "",

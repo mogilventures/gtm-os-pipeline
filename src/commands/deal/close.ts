@@ -19,6 +19,10 @@ export default class DealClose extends BaseCommand {
 		won: Flags.boolean({ description: "Mark as won", exclusive: ["lost"] }),
 		lost: Flags.boolean({ description: "Mark as lost", exclusive: ["won"] }),
 		reason: Flags.string({ description: "Close reason" }),
+		"create-project": Flags.boolean({
+			description: "Create a delivery project from this deal (won only)",
+			default: false,
+		}),
 	};
 
 	async run(): Promise<void> {
@@ -35,5 +39,13 @@ export default class DealClose extends BaseCommand {
 		const won = flags.won === true;
 		closeDeal(db, match.id, won, flags.reason);
 		this.log(`Closed "${match.name}" as ${won ? "won" : "lost"}`);
+
+		if (won && flags["create-project"]) {
+			const { createProjectFromDeal } = await import(
+				"../../services/projects.js"
+			);
+			const project = createProjectFromDeal(db, match.id);
+			this.log(`Created project: ${project.name} (id: ${project.id})`);
+		}
 	}
 }

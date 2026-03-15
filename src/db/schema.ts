@@ -78,6 +78,46 @@ export const deals = sqliteTable("deals", {
 		.$defaultFn(() => new Date().toISOString()),
 });
 
+// ── Projects (post-close delivery) ──────────────────────────────
+export const projects = sqliteTable("projects", {
+	id: integer("id").primaryKey({ autoIncrement: true }),
+	name: text("name").notNull(),
+	deal_id: integer("deal_id").references(() => deals.id),
+	contact_id: integer("contact_id").references(() => contacts.id),
+	org_id: integer("org_id").references(() => organizations.id),
+	stage: text("stage").notNull().default("kickoff"),
+	value: integer("value"),
+	notes: text("notes"),
+	started_at: text("started_at").$defaultFn(() => new Date().toISOString()),
+	completed_at: text("completed_at"),
+	created_at: text("created_at")
+		.notNull()
+		.$defaultFn(() => new Date().toISOString()),
+	updated_at: text("updated_at")
+		.notNull()
+		.$defaultFn(() => new Date().toISOString()),
+});
+
+// ── Milestones ──────────────────────────────────────────────────
+export const milestones = sqliteTable("milestones", {
+	id: integer("id").primaryKey({ autoIncrement: true }),
+	project_id: integer("project_id")
+		.notNull()
+		.references(() => projects.id),
+	title: text("title").notNull(),
+	description: text("description"),
+	contact_id: integer("contact_id").references(() => contacts.id),
+	due: text("due"),
+	completed: integer("completed", { mode: "boolean" }).default(false),
+	completed_at: text("completed_at"),
+	created_at: text("created_at")
+		.notNull()
+		.$defaultFn(() => new Date().toISOString()),
+	updated_at: text("updated_at")
+		.notNull()
+		.$defaultFn(() => new Date().toISOString()),
+});
+
 // ── Interactions ────────────────────────────────────────────────
 export const interactions = sqliteTable("interactions", {
 	id: integer("id").primaryKey({ autoIncrement: true }),

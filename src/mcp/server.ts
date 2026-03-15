@@ -156,7 +156,7 @@ server.registerTool(
 server.registerTool(
 	"propose_action",
 	{
-		description: `Propose an action for human approval. Available action types: ${getRegisteredActionTypes().join(", ")}`,
+		description: `Propose an action for human approval. Available action types: ${getRegisteredActionTypes().join(", ")}. Delivery types: update_project_stage, complete_milestone.`,
 		inputSchema: {
 			action_type: z
 				.string()
@@ -670,6 +670,87 @@ server.registerTool(
 					),
 				},
 			],
+		};
+	},
+);
+
+// ── Delivery tools ──────────────────────────────────────────────
+
+import {
+	listMilestones,
+	listProjects,
+	showProject,
+} from "../services/projects.js";
+
+server.registerTool(
+	"list_projects",
+	{
+		description:
+			"List delivery projects with optional filters (stage, contact, active)",
+		inputSchema: {
+			stage: z.string().optional().describe("Filter by delivery stage"),
+			contact_id: z.number().optional().describe("Filter by contact ID"),
+			deal_id: z.number().optional().describe("Filter by deal ID"),
+			active: z
+				.boolean()
+				.optional()
+				.describe("Only active projects (default true)"),
+		},
+	},
+	async ({ stage, contact_id, active }) => {
+		const projects = listProjects(db, {
+			stage,
+			contactId: contact_id,
+			active: active ?? true,
+		});
+		return {
+			content: [{ type: "text", text: JSON.stringify(projects, null, 2) }],
+		};
+	},
+);
+
+server.registerTool(
+	"get_project_detail",
+	{
+		description:
+			"Get full project details including milestones, tasks, contact, and deal",
+		inputSchema: {
+			project_id: z.number().describe("Project ID"),
+		},
+	},
+	async ({ project_id }) => {
+		const detail = showProject(db, project_id);
+		if (!detail) {
+			return { content: [{ type: "text", text: "Project not found" }] };
+		}
+		return {
+			content: [{ type: "text", text: JSON.stringify(detail, null, 2) }],
+		};
+	},
+);
+
+server.registerTool(
+	"list_milestones",
+	{
+		description:
+			"List milestones with optional filters (project, overdue, upcoming)",
+		inputSchema: {
+			project_id: z.number().optional().describe("Filter by project ID"),
+			overdue: z.boolean().optional().describe("Only show overdue milestones"),
+			upcoming_days: z
+				.number()
+				.optional()
+				.describe("Show milestones due within N days (default 7)"),
+		},
+	},
+	async ({ project_id, overdue, upcoming_days }) => {
+		const milestones = listMilestones(db, {
+			projectId: project_id,
+			overdue,
+			upcoming: upcoming_days !== undefined ? true : undefined,
+		});
+		return {
+			content: [{ type: "text", text: JSON.stringify(milestones, null, 2) }],
 		};
 	},
 );

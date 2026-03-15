@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm";
 import type { PipelineDB } from "../db/index.js";
 import { schema } from "../db/index.js";
 import { listContacts } from "./contacts.js";
+import { listMilestones, listProjects } from "./projects.js";
 import { listTasks } from "./tasks.js";
 
 export function emitEvent(
@@ -125,6 +126,56 @@ export function scanForTimeEvents(db: PipelineDB): number {
 				due: task.due,
 			});
 			emitted++;
+		}
+	}
+
+	// Overdue milestones
+	const overdueMilestones = listMilestones(db, { overdue: true });
+	for (const milestone of overdueMilestones) {
+		const existing = db
+			.select()
+			.from(schema.events)
+			.all()
+			.find(
+				(e) =>
+					e.event_type === "milestone_overdue" &&
+					e.entity_id === milestone.id &&
+					!e.processed,
+			);
+		if (!existing) {
+			emitEvent(db, "milestone_overdue", "milestone", milestone.id, {
+				title: milestone.title,
+				due: milestone.due,
+				project_name: milestone.project_name,
+			});
+			emitted++;
+		}
+	}
+
+	// Stale projects (no update in 14 days)
+	const activeProjects = listProjects(db, { active: true });
+	const fourteenDaysAgo = new Date();
+	fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
+	const staleCutoff = fourteenDaysAgo.toISOString();
+	for (const project of activeProjects) {
+		if (project.updated_at < staleCutoff) {
+			const existing = db
+				.select()
+				.from(schema.events)
+				.all()
+				.find(
+					(e) =>
+						e.event_type === "project_stale" &&
+						e.entity_id === project.id &&
+						!e.processed,
+				);
+			if (!existing) {
+				emitEvent(db, "project_stale", "project", project.id, {
+					name: project.name,
+					last_updated: project.updated_at,
+				});
+				emitted++;
+			}
 		}
 	}
 

@@ -134,6 +134,12 @@ export function closeDeal(
 	const stage = won ? "closed_won" : "closed_lost";
 	const now = new Date().toISOString();
 
+	const deal = db
+		.select({ title: schema.deals.title })
+		.from(schema.deals)
+		.where(eq(schema.deals.id, dealId))
+		.get();
+
 	db.update(schema.deals)
 		.set({
 			stage,
@@ -144,6 +150,13 @@ export function closeDeal(
 		})
 		.where(eq(schema.deals.id, dealId))
 		.run();
+
+	if (won) {
+		emitEvent(db, "deal_won", "deal", dealId, {
+			title: deal?.title,
+			stage: "closed_won",
+		});
+	}
 }
 
 export function addDealNote(db: PipelineDB, dealId: number, body: string) {

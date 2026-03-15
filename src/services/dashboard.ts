@@ -4,6 +4,7 @@ import { schema } from "../db/index.js";
 import { listContacts } from "./contacts.js";
 import { listDeals, pipelineView } from "./deals.js";
 import { listInteractions } from "./interactions.js";
+import { listMilestones, listProjects } from "./projects.js";
 import { listTasks } from "./tasks.js";
 
 interface DashboardData {
@@ -29,6 +30,22 @@ interface DashboardData {
 	}>;
 	pendingActions: number;
 	recentActivityCount: number;
+	deliveryHealth: {
+		activeProjects: number;
+		projectsByStage: Record<string, number>;
+		overdueMilestones: Array<{
+			id: number;
+			title: string;
+			due: string;
+			project_name: string | null;
+		}>;
+		upcomingMilestones: Array<{
+			id: number;
+			title: string;
+			due: string;
+			project_name: string | null;
+		}>;
+	};
 }
 
 export function getDashboard(db: PipelineDB): DashboardData {
@@ -88,6 +105,27 @@ export function getDashboard(db: PipelineDB): DashboardData {
 	// Recent interactions (last 7 days)
 	const recentActivityCount = listInteractions(db, { lastDays: 7 }).length;
 
+	// Delivery health
+	const activeProjectsList = listProjects(db, { active: true });
+	const projectsByStage: Record<string, number> = {};
+	for (const p of activeProjectsList) {
+		projectsByStage[p.stage] = (projectsByStage[p.stage] || 0) + 1;
+	}
+	const overdueMilestones = listMilestones(db, { overdue: true }).map((m) => ({
+		id: m.id,
+		title: m.title,
+		due: m.due!,
+		project_name: m.project_name,
+	}));
+	const upcomingMilestones = listMilestones(db, { upcoming: true }).map(
+		(m) => ({
+			id: m.id,
+			title: m.title,
+			due: m.due!,
+			project_name: m.project_name,
+		}),
+	);
+
 	return {
 		pipelineValue,
 		dealsByStage,
@@ -97,5 +135,11 @@ export function getDashboard(db: PipelineDB): DashboardData {
 		closingSoon,
 		pendingActions,
 		recentActivityCount,
+		deliveryHealth: {
+			activeProjects: activeProjectsList.length,
+			projectsByStage,
+			overdueMilestones,
+			upcomingMilestones,
+		},
 	};
 }

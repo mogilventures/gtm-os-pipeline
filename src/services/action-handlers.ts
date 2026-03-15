@@ -100,14 +100,17 @@ registerActionHandler("create_task", {
 		return null;
 	},
 	async execute(db, payload) {
+		const values: Record<string, unknown> = {
+			title: payload.title as string,
+			contact_id: payload.contact_id as number | undefined,
+			deal_id: payload.deal_id as number | undefined,
+			due: payload.due as string | undefined,
+		};
+		if (payload.project_id) values.project_id = payload.project_id;
+		if (payload.milestone_id) values.milestone_id = payload.milestone_id;
 		const task = db
 			.insert(schema.tasks)
-			.values({
-				title: payload.title as string,
-				contact_id: payload.contact_id as number | undefined,
-				deal_id: payload.deal_id as number | undefined,
-				due: payload.due as string | undefined,
-			})
+			.values(values as typeof schema.tasks.$inferInsert)
 			.returning()
 			.get();
 		return `Created task: ${task.title} (id: ${task.id})`;
@@ -190,6 +193,33 @@ registerActionHandler("update_warmth", {
 			.where(eq(schema.contacts.id, payload.contact_id as number))
 			.run();
 		return `Updated contact ${payload.contact_id} warmth to ${payload.warmth}`;
+	},
+});
+
+registerActionHandler("update_project_stage", {
+	label: "Update a project's delivery stage",
+	validate(payload) {
+		if (!payload.project_id || !payload.stage)
+			return "Missing 'project_id' or 'stage'";
+		return null;
+	},
+	async execute(db, payload) {
+		const { moveProject } = await import("./projects.js");
+		moveProject(db, payload.project_id as number, payload.stage as string);
+		return `Moved project ${payload.project_id} to stage ${payload.stage}`;
+	},
+});
+
+registerActionHandler("complete_milestone", {
+	label: "Mark a milestone as completed",
+	validate(payload) {
+		if (!payload.milestone_id) return "Missing 'milestone_id'";
+		return null;
+	},
+	async execute(db, payload) {
+		const { completeMilestone } = await import("./projects.js");
+		completeMilestone(db, payload.milestone_id as number);
+		return `Completed milestone ${payload.milestone_id}`;
 	},
 });
 

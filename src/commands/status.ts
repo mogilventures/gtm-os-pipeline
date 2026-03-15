@@ -50,6 +50,14 @@ export default class Status extends BaseCommand {
 				.select({ count: sql<number>`count(*)` })
 				.from(schema.edges)
 				.get()!.count,
+			projects: db
+				.select({ count: sql<number>`count(*)` })
+				.from(schema.projects)
+				.get()!.count,
+			milestones: db
+				.select({ count: sql<number>`count(*)` })
+				.from(schema.milestones)
+				.get()!.count,
 		};
 
 		this.log("Pipeline CRM Status");
