@@ -308,6 +308,22 @@ export const composioTriggers = sqliteTable("composio_triggers", {
 		.$defaultFn(() => new Date().toISOString()),
 });
 
+// ── Email Templates ─────────────────────────────────────────────
+export const emailTemplates = sqliteTable("email_templates", {
+	id: integer("id").primaryKey({ autoIncrement: true }),
+	name: text("name").notNull().unique(),
+	subject: text("subject").notNull(),
+	body: text("body").notNull(),
+	variables: text("variables", { mode: "json" }).$type<string[]>().default([]),
+	category: text("category"),
+	created_at: text("created_at")
+		.notNull()
+		.$defaultFn(() => new Date().toISOString()),
+	updated_at: text("updated_at")
+		.notNull()
+		.$defaultFn(() => new Date().toISOString()),
+});
+
 // ── Event Hooks ─────────────────────────────────────────────────
 export const eventHooks = sqliteTable("event_hooks", {
 	id: integer("id").primaryKey({ autoIncrement: true }),

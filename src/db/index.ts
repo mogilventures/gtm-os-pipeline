@@ -293,6 +293,20 @@ function runMigrations(db: Database.Database): void {
 		);
 	`);
 
+	// Email templates table
+	db.exec(`
+		CREATE TABLE IF NOT EXISTS email_templates (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			name TEXT NOT NULL UNIQUE,
+			subject TEXT NOT NULL,
+			body TEXT NOT NULL,
+			variables TEXT DEFAULT '[]',
+			category TEXT,
+			created_at TEXT NOT NULL DEFAULT (datetime('now')),
+			updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+		);
+	`);
+
 	// Event hooks table
 	db.exec(`
 		CREATE TABLE IF NOT EXISTS event_hooks (

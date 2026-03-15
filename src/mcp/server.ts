@@ -584,5 +584,95 @@ server.registerTool(
 	},
 );
 
+// ── Email template tools ────────────────────────────────────────
+
+import {
+	buildContactVariables,
+	getTemplate,
+	listTemplates,
+	renderTemplate,
+} from "../services/email-templates.js";
+
+server.registerTool(
+	"list_email_templates",
+	{
+		description:
+			"List available email templates, optionally filtered by category",
+		inputSchema: {
+			category: z.string().optional().describe("Filter by category"),
+		},
+	},
+	async ({ category }) => {
+		const templates = listTemplates(db, { category });
+		return {
+			content: [{ type: "text", text: JSON.stringify(templates, null, 2) }],
+		};
+	},
+);
+
+server.registerTool(
+	"get_email_template",
+	{
+		description: "Get an email template by ID with full body and variable list",
+		inputSchema: {
+			template_id: z.number().describe("Template ID"),
+		},
+	},
+	async ({ template_id }) => {
+		const template = getTemplate(db, template_id);
+		if (!template) {
+			return { content: [{ type: "text", text: "Template not found" }] };
+		}
+		return {
+			content: [{ type: "text", text: JSON.stringify(template, null, 2) }],
+		};
+	},
+);
+
+server.registerTool(
+	"render_email_template",
+	{
+		description:
+			"Render an email template for a contact, filling in variables from contact data",
+		inputSchema: {
+			template_id: z.number().describe("Template ID"),
+			contact_id: z.number().describe("Contact ID for variable resolution"),
+			extra_variables: z
+				.string()
+				.optional()
+				.describe("Extra variables as JSON string (overrides auto-resolved)"),
+		},
+	},
+	async ({ template_id, contact_id, extra_variables }) => {
+		const template = getTemplate(db, template_id);
+		if (!template) {
+			return { content: [{ type: "text", text: "Template not found" }] };
+		}
+
+		const vars = buildContactVariables(db, contact_id);
+		if (extra_variables) {
+			Object.assign(vars, JSON.parse(extra_variables));
+		}
+
+		const rendered = renderTemplate(template, vars);
+		return {
+			content: [
+				{
+					type: "text",
+					text: JSON.stringify(
+						{
+							subject: rendered.subject,
+							body: rendered.body,
+							variables_used: vars,
+						},
+						null,
+						2,
+					),
+				},
+			],
+		};
+	},
+);
+
 const transport = new StdioServerTransport();
 await server.connect(transport);

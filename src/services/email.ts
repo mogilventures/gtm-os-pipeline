@@ -46,8 +46,7 @@ async function sendViaComposio(
 		);
 	}
 	const composio = new Composio({ apiKey });
-	const userId =
-		(cfg.integrations?.user_id as string) || "pipeline-crm-user";
+	const userId = (cfg.integrations?.user_id as string) || "pipeline-crm-user";
 
 	const result = await composio.tools.execute("GMAIL_SEND_EMAIL", {
 		userId,
