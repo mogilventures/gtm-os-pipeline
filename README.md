@@ -37,12 +37,19 @@ pipeline status
 pipeline timeline --days 30
 ```
 
+```bash
+# Close a deal and start delivery
+pipeline deal:close acme --won --create-project
+pipeline milestone:add "Deliver v1" --project acme --due 2026-04-01
+pipeline project:show acme
+```
+
 ## Commands
 
 | Topic | Commands | Description |
 |-------|----------|-------------|
 | **contact** | `add` `list` `show` `edit` `rm` `tag` `note` | Manage contacts (people + org + CRM metadata) |
-| **deal** | `add` `list` `move` `close` `note` `pipeline` | Track deals through stages |
+| **deal** | `add` `list` `move` `close` `note` `pipeline` | Track deals through stages (`close --create-project`) |
 | **org** | `list` `show` `edit` `contacts` | Organizations and their members |
 | **task** | `add` `list` `done` | To-dos attached to contacts or deals |
 | **log** | `call` `email` `meeting` `list` | Record interactions |
@@ -50,6 +57,8 @@ pipeline timeline --days 30
 | **agent** | *(free-form prompt)* | Chat with the CRM assistant |
 | **agent** | `enrich` `follow-up` `digest` `qualify` | Built-in agent workflows |
 | **schedule** | `add` `list` `remove` `run` `install` `uninstall` | Automated agent runs via cron |
+| **project** | `add` `list` `show` `move` `close` | Delivery projects linked to won deals |
+| **milestone** | `add` `list` `done` | Milestones within projects |
 | **field** | `get` `set` `rm` | Custom fields on any entity |
 | **config** | `get` `set` | Read/write configuration |
 | **top-level** | `init` `status` `search` `timeline` `related` `link` `unlink` `import` `export` `approve` `dashboard` | Setup, search, graph, data exchange, approvals |
@@ -58,7 +67,7 @@ Every command supports `--json` for scripted output and `--help` for details.
 
 ## AI Agents
 
-Pipeline ships with four built-in agents:
+Pipeline ships with nine built-in agents:
 
 | Agent | What it does |
 |-------|-------------|
@@ -66,6 +75,11 @@ Pipeline ships with four built-in agents:
 | `agent:follow-up` | Find stale contacts and propose follow-up emails |
 | `agent:digest` | Morning pipeline briefing and daily summary |
 | `agent:qualify` | Assess deal health and suggest next actions |
+| `agent:inbox` | Review inbox and propose replies to incoming emails |
+| `agent:deal-manager` | Review all active deals for staleness and propose actions |
+| `agent:meeting-prep` | Prepare a briefing for an upcoming meeting with a contact |
+| `agent:task-automator` | Ensure every active deal has appropriate tasks |
+| `agent:delivery-check` | Review active projects for delivery health and propose actions |
 
 Run any agent with a free-form prompt:
 
@@ -121,6 +135,9 @@ auto_approve = false
 [email]
 provider = "composio"
 from = ""
+
+[delivery]
+stages = ["kickoff", "in_progress", "review", "complete"]
 
 [integrations]
 composio_api_key = "your-composio-api-key"
