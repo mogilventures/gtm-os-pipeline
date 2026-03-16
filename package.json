@@ -1,7 +1,7 @@
 {
   "name": "pipeline-cli",
   "version": "0.1.0",
-  "description": "AI-native CLI CRM for developer-founders",
+  "description": "AI-native CLI operating system for developer-founders",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

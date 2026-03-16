@@ -60,7 +60,7 @@ export default class Status extends BaseCommand {
 				.get()!.count,
 		};
 
-		this.log("Pipeline CRM Status");
+		this.log("Pipeline Status");
 		this.log("═".repeat(30));
 		this.log(`Database: ${dbPath}`);
 		this.log(`Config:   ${configPath}`);

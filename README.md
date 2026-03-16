@@ -1,6 +1,6 @@
-# Pipeline CRM
+# Pipeline
 
-A local-first, AI-native CLI CRM for developer-founders.
+A local-first, AI-native operating system that lets one person sell, deliver, and run a business from the terminal.
 
 ![Node >= 20](https://img.shields.io/badge/node-%3E%3D20-brightgreen) ![License: MIT](https://img.shields.io/badge/license-MIT-blue)
 
@@ -54,7 +54,7 @@ pipeline project:show acme
 | **task** | `add` `list` `done` | To-dos attached to contacts or deals |
 | **log** | `call` `email` `meeting` `list` | Record interactions |
 | **email** | `send` `inbox` `thread` `sync` | Send and receive email (via Composio Gmail) |
-| **agent** | *(free-form prompt)* | Chat with the CRM assistant |
+| **agent** | *(free-form prompt)* | Chat with the AI assistant |
 | **agent** | `enrich` `follow-up` `digest` `qualify` | Built-in agent workflows |
 | **schedule** | `add` `list` `remove` `run` `install` `uninstall` | Automated agent runs via cron |
 | **project** | `add` `list` `show` `move` `close` | Delivery projects linked to won deals |
@@ -153,7 +153,7 @@ pipeline config:set email.from "you@yourdomain.com"
 
 ## MCP Server
 
-Pipeline exposes its service layer as an MCP server over stdio, so any MCP-compatible client (IDEs, other agents) can interact with your CRM data.
+Pipeline exposes its service layer as an MCP server over stdio, so any MCP-compatible client (IDEs, other agents) can interact with your Pipeline data.
 
 ```bash
 node bin/mcp.js --db ~/.pipeline/pipeline.db

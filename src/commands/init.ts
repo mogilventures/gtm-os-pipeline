@@ -10,7 +10,7 @@ import { getDb, getDbPath } from "../db/index.js";
 
 export default class Init extends BaseCommand {
 	static override description =
-		"Initialize Pipeline CRM (creates ~/.pipeline/ with DB and config)";
+		"Initialize Pipeline (creates ~/.pipeline/ with DB and config)";
 
 	static override examples = ["<%= config.bin %> init"];
 
@@ -40,6 +40,6 @@ export default class Init extends BaseCommand {
 		}
 
 		this.log(`\nPipeline initialized at ${dir}`);
-		this.log("Run `pipeline status` to see your CRM.");
+		this.log("Run `pipeline status` to see your pipeline.");
 	}
 }

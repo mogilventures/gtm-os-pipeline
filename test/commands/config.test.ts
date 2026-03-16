@@ -31,7 +31,7 @@ describe("init, config, and status", () => {
 	it("pipeline status shows table counts", () => {
 		runPipeline(`init --db ${dbPath}`);
 		const output = runPipeline(`status --db ${dbPath}`);
-		expect(output).toContain("Pipeline CRM Status");
+		expect(output).toContain("Pipeline Status");
 		expect(output).toContain("contacts");
 		expect(output).toContain("deals");
 		expect(output).toContain("0");

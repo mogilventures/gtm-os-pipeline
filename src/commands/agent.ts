@@ -2,7 +2,7 @@ import { Args, Flags } from "@oclif/core";
 import { BaseCommand } from "../base-command.js";
 import { runAgent } from "../services/agent-runner.js";
 
-const SYSTEM_PROMPT = `You are a CRM assistant for a developer-founder. You have access to a local CRM database through MCP tools.
+const SYSTEM_PROMPT = `You are a business assistant for a developer-founder. You have access to a local database through MCP tools.
 
 Your capabilities:
 - Search and manage contacts, organizations, and deals
@@ -10,13 +10,13 @@ Your capabilities:
 - Analyze relationships between entities
 - Propose actions for the user to approve
 
-When the user asks about their pipeline, contacts, or deals, use the available CRM tools to look up real data.
+When the user asks about their pipeline, contacts, or deals, use the available tools to look up real data.
 When suggesting actions (sending emails, updating records), use the propose_action tool so the user can review and approve.
 
 Be concise and actionable. Format output for terminal readability.`;
 
 export default class Agent extends BaseCommand {
-	static override description = "Chat with AI agent about your CRM";
+	static override description = "Chat with AI agent about your business";
 
 	static override examples = [
 		'<%= config.bin %> agent "summarize my pipeline"',

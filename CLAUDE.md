@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What is this?
 
-A local-first, AI-native CLI CRM for developer-founders. Built with oclif v4, TypeScript (ESM), SQLite (via better-sqlite3 + Drizzle ORM). Agents propose actions via MCP tools; humans approve them before execution.
+A local-first, AI-native CLI operating system for developer-founders — sell, deliver, and run a business from the terminal. Built with oclif v4, TypeScript (ESM), SQLite (via better-sqlite3 + Drizzle ORM). Agents propose actions via MCP tools; humans approve them before execution.
 
 ## Commands
 
